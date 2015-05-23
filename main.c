@@ -16,13 +16,21 @@
 		}						\
 	} while (0)		
 
+#define LOWER(s)						\
+	do {							\
+		int i;						\
+		for (i = 0; s[i] != '\0'; i++)			\
+			if (s[i] >= 'A' && s[i] <= 'Z')		\
+				s[i] = s[i] + 32;		\
+	} while (0)
+
 /* Reads the input file */
-enum word_result get_input(FILE *in, FILE *text, 
+enum word_result get_input(FILE *in, FILE **text, 
 		char ***cost, int *cost_no,
 		char ***min, int *min_no,
 		char ***fixed_words, int **fixed_lengths, int *fixed_no);
 /* Reads the text file */
-enum word_result get_text(FILE *text, struct tnode **t)
+enum word_result get_text(FILE *text, struct tnode **t);
 
 int main(int argc, char **argv)
 {
@@ -53,7 +61,7 @@ int main(int argc, char **argv)
 	if ((out = fopen(argv[2], "w")) == NULL)
 		CHKRES(WORD_ERROR_FILE_ACCESS);
 
-	CHKRES(get_input(in, text, &cost_words, &cost_no,
+	CHKRES(get_input(in, &text, &cost_words, &cost_no,
 				&min_words, &min_no,
 				&fixed_words, &fixed_lengths, &fixed_no));
 #ifdef DEBUG
@@ -72,11 +80,13 @@ int main(int argc, char **argv)
 	search_tree = tree_create();
 
 	get_text(text, &search_tree);
+	printf("\ntree:\n");
+	tree_print(search_tree);
 
 	return EXIT_SUCCESS;
 }
 
-enum word_result get_input(FILE *in, FILE *text, 
+enum word_result get_input(FILE *in, FILE **text, 
 		char ***cost, int *cost_no,
 		char ***min, int *min_no,
 		char ***fixed_words, int **fixed_lengths, int *fixed_no)
@@ -87,7 +97,7 @@ enum word_result get_input(FILE *in, FILE *text,
 
 	fgets(buffer, LINE_LEN, in);
 	buffer[strlen(buffer) - 1] = '\0';
-	if ((text = fopen(buffer, "r")) == NULL)
+	if ((*text = fopen(buffer, "r")) == NULL)
 		return WORD_ERROR_FILE_ACCESS;
 
 	fgets(buffer, LINE_LEN, in);
@@ -140,24 +150,26 @@ enum word_result get_text(FILE *text, struct tnode **t)
 	int word_index;
 	int i;
 
-	word[0] = '\0';
-	word_index = 0;
-	while (fgets(buffer, LINE_LEN, text) != NULL)
-	for (i = 0; buffer[i] != '\0'; i++) {
-		/* 
-		 * Making sure there aren't two separators one after the
-		 * other
-		 */
-		if (strchr(SEP, buffer[i]) && word[0] != '\0') {
-			word[word_index] = '\0';
-			(*words)[(*index)++]  = strdup(word);
-			word[0] = '\0';
-			word_index = 0;
-		} else if (strchr(IGNORED, buffer[i]) == NULL) {
-			word[word_index++] = buffer[i];
+	while (fgets(buffer, LINE_LEN, text) != NULL) {
+		word[0] = '\0';
+		word_index = 0;
+		for (i = 0; buffer[i] != '\n'; i++) {
+			/* 
+			 * Making sure there aren't two separators one after the
+			 * other
+			 */
+			if (strchr(SEP, buffer[i]) && word[0] != '\0') {
+				word[word_index] = '\0';
+				LOWER(word);
+				tree_add(t, word);
+				word[0] = '\0';
+				word_index = 0;
+			} else if (strchr(IGNORED, buffer[i]) == NULL) {
+				word[word_index++] = buffer[i];
+			}
 		}
-	}
 
-	word[word_index] = '\0';
-	(*words)[*index]  = strdup(word);
+		word[word_index] = '\0';
+		tree_add(t, word);
+	}
 }
