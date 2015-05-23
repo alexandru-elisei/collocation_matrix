@@ -31,7 +31,8 @@
 enum word_result {
 	WORD_SUCCESS			= 1, 	
 	WORD_ERROR_FILE_ACCESS		= 2,	/* Cannot open file */
-	WORD_ERROR_UNKNOWN_ERROR		= 99,	
+	WORD_ERROR_INVALID_ARGUMENTS	= 3,
+	WORD_ERROR_UNKNOWN_ERROR	= 99,	
 };
 
 /* Prints the messages associated with the result codes */

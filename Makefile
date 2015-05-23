@@ -3,12 +3,12 @@
 # Tema 2
 
 CC = "gcc"
-override CFLAGS += "-Wall -O2"
+override CFLAGS += "-Wall"
 PROG = "words"
 
 HEADERS = common.h			
 
-SOURCES = main.c
+SOURCES = main.c			\
 	  $(HEADERS:%.h=%.c)
 
 OBJS = $(SOURCES:%.c=%.o)
@@ -17,10 +17,10 @@ OBJS = $(SOURCES:%.c=%.o)
 build: $(PROG)
 
 $(PROG): $(OBJS) $(HEADERS)
-	$(CC) $(OBJS) -o $(PROG) $(CFLAGS) -O2 -fkeep-inline-functions
+	$(CC) $(OBJS) -o $(PROG) $(CFLAGS)
 	
 %.o: %.c
-	$(CC) -c $^ -o $@ $(CFLAGS)
+	$(CC) -c $^ -o $@ $(CFLAGS) -O2
 
 .PHONY: clean
 clean:

@@ -10,6 +10,8 @@ void word_print_result(enum word_result msg)
 		fprintf(stderr, "[  OK!  ] Operation executed successfully.\n");
 	else if (msg == WORD_ERROR_FILE_ACCESS)
 		PRINTERR("Cannot access file.\n");
+	else if (msg == WORD_ERROR_INVALID_ARGUMENTS)
+		PRINTERR("Invalid arguments supplied.\n");
 	else if (msg == WORD_ERROR_UNKNOWN_ERROR)
 		PRINTERR("Unknown error occured.\n");
 }

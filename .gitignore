@@ -1,7 +1,8 @@
 *.pdf
 test*
+text*
 *in
-*out
+out*
 *.o
 *words*
 maitreyi
