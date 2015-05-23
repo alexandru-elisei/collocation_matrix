@@ -6,11 +6,10 @@ CC = "gcc"
 override CFLAGS += "-Wall -O2"
 PROG = "words"
 
-# HEADERS = pqueue.h			\
-# 	  common.h
+HEADERS = common.h			
 
 SOURCES = main.c
-	  # $(HEADERS:%.h=%.c)
+	  $(HEADERS:%.h=%.c)
 
 OBJS = $(SOURCES:%.c=%.o)
 
