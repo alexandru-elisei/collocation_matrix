@@ -12,6 +12,8 @@ void word_print_result(enum word_result msg)
 		PRINTERR("Cannot access file.\n");
 	else if (msg == WORD_ERROR_INVALID_ARGUMENTS)
 		PRINTERR("Invalid arguments supplied.\n");
+	else if (msg == WORD_ERROR_EMPTY_LIST)
+		PRINTERR("Empty list supplied.\n");
 	else if (msg == WORD_ERROR_UNKNOWN_ERROR)
 		PRINTERR("Unknown error occured.\n");
 }

@@ -5,4 +5,7 @@ text*
 out*
 *.o
 *words*
+Makefile.compare
+compare.cc
+check.sh
 maitreyi

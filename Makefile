@@ -6,7 +6,9 @@ CC = "gcc"
 override CFLAGS += "-Wall"
 PROG = "words"
 
-HEADERS = common.h			
+HEADERS = common.h			\
+	  list.h			\
+	  hash.h
 
 SOURCES = main.c			\
 	  $(HEADERS:%.h=%.c)
