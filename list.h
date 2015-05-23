@@ -7,21 +7,21 @@
 
 #include "common.h"
 
-struct node {
+struct lnode {
 	char *word;
-	struct node *next;
+	struct lnode *next;
 };
 
 /* Returns NULL */
-struct node *list_create();
+struct lnode *list_create();
 
 /* Deallocates memory and returns NULL */
-struct node *list_destroy(struct node *l);
+struct lnode *list_destroy(struct lnode *l);
 
 /* Adds a word to the list, making sure there are no duplicates */
-enum word_result list_add(struct node **l, char *w);
+enum word_result list_add(struct lnode **l, char *w);
 
 /* Prints the list */
-void list_print(struct node *l);
+void list_print(struct lnode *l);
 
 #endif	/* ifndef LISTS_H */

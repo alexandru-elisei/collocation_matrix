@@ -8,6 +8,8 @@ void word_print_result(enum word_result msg)
 	/* I don't like switch */
 	if (msg == WORD_SUCCESS)
 		fprintf(stderr, "[  OK!  ] Operation executed successfully.\n");
+	if (msg == WORD_DUPLICATE)
+		fprintf(stderr, "[  OK!  ] Duplicate word found in binary tree.\n");
 	else if (msg == WORD_ERROR_FILE_ACCESS)
 		PRINTERR("Cannot access file.\n");
 	else if (msg == WORD_ERROR_INVALID_ARGUMENTS)

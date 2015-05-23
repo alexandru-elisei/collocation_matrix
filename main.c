@@ -1,9 +1,10 @@
 #include "common.h"
 #include "list.h"
+#include "tree.h"
 
 #define CHKRES(r)						\
 	do { 							\
-		if ((r) != WORD_SUCCESS) {			\
+		if ((r) != WORD_SUCCESS && r!= WORD_DUPLICATE) {\
 			word_print_result((r));			\
 			if (in != NULL)				\
 				fclose(in);			\
@@ -21,7 +22,7 @@ enum word_result get_input(FILE *in, FILE *text,
 		char ***min, int *min_no,
 		char ***fixed_words, int **fixed_lengths, int *fixed_no);
 /* Reads the text file */
-enum word_result get_text(FILE *in, char ***words, int *index);
+enum word_result get_text(FILE *text, struct tnode **t)
 
 int main(int argc, char **argv)
 {
@@ -29,7 +30,9 @@ int main(int argc, char **argv)
 	FILE *text = NULL;	/* Fisierul cu textul */
 	FILE *out = NULL;	/* Fisierul de iesire */
 
-	struct node *l;
+	struct lnode *l;
+	struct tnode *search_tree;
+
 	
 	char **cost_words;	/* words needed for printing the cost */
 	int cost_no;		/* number of words in the cost_words array */
@@ -66,6 +69,9 @@ int main(int argc, char **argv)
 	for (i = 0; i < fixed_no; i++)
 		printf("%d - |%s|\n", fixed_lengths[i], fixed_words[i]);
 #endif
+	search_tree = tree_create();
+
+	get_text(text, &search_tree);
 
 	return EXIT_SUCCESS;
 }
@@ -126,14 +132,17 @@ enum word_result get_input(FILE *in, FILE *text,
 	return WORD_SUCCESS;
 }
 
-void get_words(char buffer[], char ***words, int *index)
+/* Reads the text file */
+enum word_result get_text(FILE *text, struct tnode **t)
 {
-	int i;
+	char buffer[LINE_LEN];
 	char word[WORD_LEN];
 	int word_index;
+	int i;
 
 	word[0] = '\0';
 	word_index = 0;
+	while (fgets(buffer, LINE_LEN, text) != NULL)
 	for (i = 0; buffer[i] != '\0'; i++) {
 		/* 
 		 * Making sure there aren't two separators one after the

@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#define FOREVER		(1)
 #define LINE_LEN	(10000)
 #define WORD_LEN	(30)
 #define IGNORED		("\"!.,?:():_*$%^&")
@@ -38,6 +39,7 @@ enum word_result {
 	WORD_ERROR_FILE_ACCESS		= 2,	/* Cannot open file */
 	WORD_ERROR_INVALID_ARGUMENTS	= 3,
 	WORD_ERROR_EMPTY_LIST		= 4,
+	WORD_DUPLICATE			= 5,
 	WORD_ERROR_UNKNOWN_ERROR	= 99,	
 };
 

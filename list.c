@@ -1,15 +1,15 @@
 #include "list.h"
 
 /* Returns NULL */
-struct node *list_create()
+struct lnode *list_create()
 {
 	return NULL;
 }
 
 /* Deallocates memory and returns NULL */
-struct node *list_destroy(struct node *l)
+struct lnode *list_destroy(struct lnode *l)
 {
-	struct node *tmp;
+	struct lnode *tmp;
 
 	while (l != NULL) {
 		tmp = l;
@@ -22,13 +22,13 @@ struct node *list_destroy(struct node *l)
 }
 
 /* Adds a word to the list, making sure there are no duplicates */
-enum word_result list_add(struct node **l, char *w)
+enum word_result list_add(struct lnode **l, char *w)
 {
-	struct node *tmp;
-	struct node *aux;
+	struct lnode *tmp;
+	struct lnode *aux;
 
 	if (*l == NULL) {
-		*l = (struct node *) malloc(sizeof(struct node));
+		*l = (struct lnode *) malloc(sizeof(struct lnode));
 		(*l)->word = strdup(w);
 		(*l)->next = NULL;
 	} else {
@@ -37,7 +37,7 @@ enum word_result list_add(struct node **l, char *w)
 				break;
 
 		if (strcmp(tmp->word, w) != 0) {
-			aux = (struct node *) malloc(sizeof(struct node));	
+			aux = (struct lnode *) malloc(sizeof(struct lnode));	
 			aux->word = strdup(w);
 			aux->next = tmp->next;
 			tmp->next = aux;
@@ -48,7 +48,7 @@ enum word_result list_add(struct node **l, char *w)
 }
 
 /* Prints the list */
-void list_print(struct node *l)
+void list_print(struct lnode *l)
 {
 	for (; l != NULL; l = l->next)
 		printf("%s\n", l->word);
