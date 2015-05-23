@@ -8,7 +8,7 @@ PROG = "words"
 
 HEADERS = common.h			\
 	  list.h			\
-	  hash.h
+	  tree.h
 
 SOURCES = main.c			\
 	  $(HEADERS:%.h=%.c)
