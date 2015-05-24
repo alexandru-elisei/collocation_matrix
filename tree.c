@@ -63,6 +63,30 @@ int tree_add(struct tnode **t, char *w, int distinct_words)
 	}
 }
 
+/* Searches for a word and returns the index in the graph */
+int tree_search(struct tnode *t, char *w)
+{
+	int equal;
+
+	if (t == NULL)
+		return -1;
+
+	while (FOREVER) {
+		equal = strcmp(w, t->word);
+		if (equal < 0)
+			t = t->left;
+		else if (equal > 0)
+			t = t->right;
+		else 
+			return t->graph_index;
+
+		/* Word not found */
+		if (t == NULL)
+			return -1;
+	}
+}
+
+
 /* Prints the tree, smaller (lexicographically) to larger */
 void tree_print(struct tnode *t)
 {

@@ -30,6 +30,7 @@ enum word_result get_input(FILE *in, FILE **text,
 		char ***cost, int *cost_no,
 		char ***min, int *min_no,
 		char ***fixed_words, int **fixed_lengths, int *fixed_no);
+
 /* Reads the text file */
 enum word_result get_text(FILE *text, struct tnode **t, 
 		unsigned int *total_words, struct wgraph *graph);
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
 	FILE *out = NULL;	/* Fisierul de iesire */
 
 	struct tnode *search_tree;
-	struct wgraph *word_graph;
+	struct wgraph *word_graph = NULL;
 	
 	char **cost_words;	/* words needed for printing the cost */
 	int cost_no;		/* number of words in the cost_words array */
@@ -84,12 +85,20 @@ int main(int argc, char **argv)
 
 	get_text(text, &search_tree, &total_words, word_graph);
 	printf("\ntree:\n");
-	//tree_print(search_tree);
-	//wgraph_print(word_graph);
+	tree_print(search_tree);
+	printf("\ngraph:\n");
+	wgraph_print(word_graph);
 
 	/*
 	printf("total_words = %d\n", total_words);
 	printf("distinct_words = %d\n", distinct_words);
+	*/
+	
+
+	/*
+	printf("index of fisier = %d\n", tree_search(search_tree, "fisier"));
+	printf("index of scurte = %d\n", tree_search(search_tree, "scurte"));
+	printf("index of inexistent = %d\n", tree_search(search_tree, "e"));
 	*/
 
 	search_tree = tree_destroy(search_tree);
@@ -163,14 +172,16 @@ enum word_result get_text(FILE *text, struct tnode **t,
 		unsigned int *total_words, struct wgraph *graph)
 {
 	char buffer[LINE_LEN];
-	char word[WORD_LEN], prev[WORD_LEN];
+	char word[WORD_LEN];
 	/* The address is shared between the search tree and the graph */
-	char *word_shared_address;
+	char *word_shared_address, *previous_word;
 	int word_index;
 	int graph_index;
 	int i;
 
 	*total_words = 0;
+	previous_word = NULL;
+	word_shared_address = NULL;
 	while (fgets(buffer, LINE_LEN, text) != NULL) {
 		word[0] = '\0';
 		word_index = 0;
@@ -194,19 +205,29 @@ enum word_result get_text(FILE *text, struct tnode **t,
 				word_shared_address = strdup(word);
 
 				/* 
-				 * Adding the new word to the search tree and 
+				 * Adding the previous word and its neighbour,
+				 * the current word, to the search tree and 
 				 * checking if it was found before in the text
 				 */
-				graph_index = tree_add(t, word_shared_address, 
-						graph->size);
-				wgraph_add(graph, word_shared_address,
-						graph_index);
+				if (previous_word != NULL) {
+					graph_index = tree_add(t, previous_word, 
+							graph->size);
+					wgraph_add(graph, previous_word,
+						word_shared_address, graph_index);
+				}
+
+				previous_word = word_shared_address;
 
 				word[0] = '\0';
 				word_index = 0;
 				(*total_words)++;
 			} 
 		}
-
 	}
+
+	/* Adding the last word */
+	graph_index = tree_add(t, word_shared_address, graph->size);
+	wgraph_add(graph, word_shared_address, NULL, graph_index);
+
+	return WORD_SUCCESS;
 }

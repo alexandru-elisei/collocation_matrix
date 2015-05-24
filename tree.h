@@ -28,6 +28,9 @@ struct tnode *tree_destroy(struct tnode *t);
  */
 int tree_add(struct tnode **t, char *w, int distinct_words);
 
+/* Searches for a word and returns the index in the graph */
+int tree_search(struct tnode *t, char *w);
+
 /* Prints the tree, smaller (lexicographically) to larger */
 void tree_print(struct tnode *t);
 
