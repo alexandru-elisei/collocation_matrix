@@ -10,7 +10,7 @@
 
 struct tnode {
 	char *word;		
-	int graph_index;	/* index in the graph array */
+	int graph_index;		/* index in the graph array */
 	struct tnode *left;		/* lexicographically smaller */
 	struct tnode *right;		/* lexicographically larger */
 };

@@ -1,6 +1,7 @@
 #include "common.h"
 #include "list.h"
 #include "tree.h"
+#include "wgraph.h"
 
 #define CHKRES(r)						\
 	do { 							\
@@ -31,7 +32,7 @@ enum word_result get_input(FILE *in, FILE **text,
 		char ***fixed_words, int **fixed_lengths, int *fixed_no);
 /* Reads the text file */
 enum word_result get_text(FILE *text, struct tnode **t, 
-		unsigned int *total_words, unsigned int *distinct_words);
+		unsigned int *total_words, struct wgraph *graph);
 
 int main(int argc, char **argv)
 {
@@ -39,9 +40,8 @@ int main(int argc, char **argv)
 	FILE *text = NULL;	/* Fisierul cu textul */
 	FILE *out = NULL;	/* Fisierul de iesire */
 
-	struct lnode *l;
 	struct tnode *search_tree;
-
+	struct wgraph *word_graph;
 	
 	char **cost_words;	/* words needed for printing the cost */
 	int cost_no;		/* number of words in the cost_words array */
@@ -51,7 +51,6 @@ int main(int argc, char **argv)
 	int *fixed_lengths;	/* length for the fixed length path */
 	int fixed_no;		/* number of words in the fixed_words array */
 	unsigned int total_words;
-	unsigned int distinct_words;
 
 	int i;
 
@@ -81,15 +80,24 @@ int main(int argc, char **argv)
 		printf("%d - |%s|\n", fixed_lengths[i], fixed_words[i]);
 #endif
 	search_tree = tree_create();
+	word_graph = wgraph_create();
 
-	get_text(text, &search_tree, &total_words, &distinct_words);
+	get_text(text, &search_tree, &total_words, word_graph);
 	printf("\ntree:\n");
-	tree_print(search_tree);
+	//tree_print(search_tree);
+	//wgraph_print(word_graph);
 
 	/*
 	printf("total_words = %d\n", total_words);
 	printf("distinct_words = %d\n", distinct_words);
 	*/
+
+	search_tree = tree_destroy(search_tree);
+	word_graph = wgraph_destroy(word_graph);
+
+	fclose(in);
+	fclose(out);
+	fclose(text);
 
 	return EXIT_SUCCESS;
 }
@@ -152,7 +160,7 @@ enum word_result get_input(FILE *in, FILE **text,
 
 /* Reads the text file */
 enum word_result get_text(FILE *text, struct tnode **t, 
-		unsigned int *total_words, unsigned int *distinct_words)
+		unsigned int *total_words, struct wgraph *graph)
 {
 	char buffer[LINE_LEN];
 	char word[WORD_LEN], prev[WORD_LEN];
@@ -163,7 +171,6 @@ enum word_result get_text(FILE *text, struct tnode **t,
 	int i;
 
 	*total_words = 0;
-	*distinct_words = 0;
 	while (fgets(buffer, LINE_LEN, text) != NULL) {
 		word[0] = '\0';
 		word_index = 0;
@@ -186,11 +193,14 @@ enum word_result get_text(FILE *text, struct tnode **t,
 				word[word_index] = '\0';
 				word_shared_address = strdup(word);
 
+				/* 
+				 * Adding the new word to the search tree and 
+				 * checking if it was found before in the text
+				 */
 				graph_index = tree_add(t, word_shared_address, 
-						*distinct_words);
-				/* I inserted a new word in the tree */
-				if (graph_index == *distinct_words)
-					(*distinct_words)++;
+						graph->size);
+				wgraph_add(graph, word_shared_address,
+						graph_index);
 
 				word[0] = '\0';
 				word_index = 0;
