@@ -154,19 +154,21 @@ enum word_result get_text(FILE *text, struct tnode **t)
 		word[0] = '\0';
 		word_index = 0;
 		for (i = 0; buffer[i] != '\n'; i++) {
-			/* 
-			 * Making sure there aren't two separators one after the
-			 * other
-			 */
-			if (strchr(SEP, buffer[i]) && word[0] != '\0') {
+			/* All lower case */
+			if (buffer[i] >= 'A' && buffer[i] <= 'Z') {
+				word[word_index++] = buffer[i] - 'A' + 'a';
+			/* Digits and "'" too */
+			} else if ((buffer[i] >= '0' && buffer[i] <= '9') ||
+					buffer[i] == '\'') {
+				word[word_index++] = buffer[i];
+			/* Words have at least one letter/digit/' */
+			} else if (strchr(SEP, buffer[i]) != NULL &&
+					word[0] != '\0') {
 				word[word_index] = '\0';
-				LOWER(word);
 				tree_add(t, word);
 				word[0] = '\0';
 				word_index = 0;
-			} else if (strchr(IGNORED, buffer[i]) == NULL) {
-				word[word_index++] = buffer[i];
-			}
+			} 
 		}
 
 		word[word_index] = '\0';
