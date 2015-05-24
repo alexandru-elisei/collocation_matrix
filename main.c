@@ -30,7 +30,8 @@ enum word_result get_input(FILE *in, FILE **text,
 		char ***min, int *min_no,
 		char ***fixed_words, int **fixed_lengths, int *fixed_no);
 /* Reads the text file */
-enum word_result get_text(FILE *text, struct tnode **t);
+enum word_result get_text(FILE *text, struct tnode **t, 
+		unsigned int *total_words, unsigned int *distinct_words);
 
 int main(int argc, char **argv)
 {
@@ -49,6 +50,8 @@ int main(int argc, char **argv)
 	char **fixed_words;	/* words for the fixed length path */
 	int *fixed_lengths;	/* length for the fixed length path */
 	int fixed_no;		/* number of words in the fixed_words array */
+	unsigned int total_words;
+	unsigned int distinct_words;
 
 	int i;
 
@@ -79,9 +82,22 @@ int main(int argc, char **argv)
 #endif
 	search_tree = tree_create();
 
-	get_text(text, &search_tree);
+	get_text(text, &search_tree, &total_words, &distinct_words);
 	printf("\ntree:\n");
 	tree_print(search_tree);
+
+	printf("total_words = %d\n", total_words);
+	printf("distinct_words = %d\n", distinct_words);
+
+#ifdef DEBUG
+	l = list_create();
+	list_add(&l, "test");
+	list_add(&l, "mode");
+	list_add(&l, "mode");
+	list_add(&l, "twice");
+
+	list_print(l);
+#endif
 
 	return EXIT_SUCCESS;
 }
@@ -143,17 +159,20 @@ enum word_result get_input(FILE *in, FILE **text,
 }
 
 /* Reads the text file */
-enum word_result get_text(FILE *text, struct tnode **t)
+enum word_result get_text(FILE *text, struct tnode **t, 
+		unsigned int *total_words, unsigned int *distinct_words)
 {
 	char buffer[LINE_LEN];
 	char word[WORD_LEN];
 	int word_index;
 	int i;
 
+	*total_words = 0;
+	*distinct_words = 0;
 	while (fgets(buffer, LINE_LEN, text) != NULL) {
 		word[0] = '\0';
 		word_index = 0;
-		for (i = 0; buffer[i] != '\n'; i++) {
+		for (i = 0; buffer[i] != '\0'; i++) {
 			/* All lower case */
 			if (buffer[i] >= 'A' && buffer[i] <= 'Z') {
 				word[word_index++] = buffer[i] - 'A' + 'a';
@@ -170,13 +189,13 @@ enum word_result get_text(FILE *text, struct tnode **t)
 			} else if (strchr(SEP, buffer[i]) != NULL &&
 					word[0] != '\0') {
 				word[word_index] = '\0';
-				tree_add(t, word);
+				if (tree_add(t, word) != WORD_DUPLICATE)
+					(*distinct_words)++;
 				word[0] = '\0';
 				word_index = 0;
+				(*total_words)++;
 			} 
 		}
 
-		word[word_index] = '\0';
-		tree_add(t, word);
 	}
 }

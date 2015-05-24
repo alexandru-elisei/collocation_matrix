@@ -30,6 +30,8 @@ enum word_result list_add(struct lnode **l, char *w)
 	if (*l == NULL) {
 		*l = (struct lnode *) malloc(sizeof(struct lnode));
 		(*l)->word = strdup(w);
+		(*l)->count = 1;
+		(*l)->cost = 0;
 		(*l)->next = NULL;
 	} else {
 		for (tmp = *l; tmp->next != NULL; tmp = tmp->next)
@@ -39,8 +41,12 @@ enum word_result list_add(struct lnode **l, char *w)
 		if (strcmp(tmp->word, w) != 0) {
 			aux = (struct lnode *) malloc(sizeof(struct lnode));	
 			aux->word = strdup(w);
+			aux->count = 1;
+			aux->cost = 0;
 			aux->next = tmp->next;
 			tmp->next = aux;
+		} else {
+			tmp->count++;
 		}
 	}
 
@@ -51,5 +57,5 @@ enum word_result list_add(struct lnode **l, char *w)
 void list_print(struct lnode *l)
 {
 	for (; l != NULL; l = l->next)
-		printf("%s\n", l->word);
+		printf("%s - %d (cost %g)\n", l->word, l->count, l->cost);
 }

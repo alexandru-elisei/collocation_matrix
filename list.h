@@ -9,6 +9,8 @@
 
 struct lnode {
 	char *word;
+	unsigned int count;	/* how many times the node appears */
+	float cost;
 	struct lnode *next;
 };
 
