@@ -12,21 +12,20 @@ struct tnode *tree_destroy(struct tnode *h)
 	if (h != NULL) {
 		tree_destroy(h->left);
 		tree_destroy(h->right);
-		free(h->word);
 		free(h);
 	}
 	return NULL;
 }
 
-/* Adds an element to the tree */
-enum word_result tree_add(struct tnode **t, char *c)
+/* Adds the address of a string to the tree */
+enum word_result tree_add(struct tnode **t, char *w)
 {
 	struct tnode *tmp;
 	struct tnode *it;
 	int equal;
 
 	tmp = (struct tnode *)malloc(sizeof(struct tnode));
-	tmp->word = strdup(c);
+	tmp->word = w;
 	tmp->count = 1;
 	tmp->left = tmp->right = NULL;
   
@@ -37,7 +36,7 @@ enum word_result tree_add(struct tnode **t, char *c)
 
 	it = *t;
 	while (FOREVER) {
-		equal = strcmp(c, it->word);
+		equal = strcmp(w, it->word);
 		if (equal < 0) {
 			if (it->left == NULL) {
 				it->left = tmp;

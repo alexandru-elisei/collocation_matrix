@@ -163,7 +163,9 @@ enum word_result get_text(FILE *text, struct tnode **t,
 		unsigned int *total_words, unsigned int *distinct_words)
 {
 	char buffer[LINE_LEN];
-	char word[WORD_LEN];
+	char word[WORD_LEN], prev[WORD_LEN];
+	/* The address is shared between the search tree and the graph */
+	char *word_address;
 	int word_index;
 	int i;
 
@@ -189,7 +191,8 @@ enum word_result get_text(FILE *text, struct tnode **t,
 			} else if (strchr(SEP, buffer[i]) != NULL &&
 					word[0] != '\0') {
 				word[word_index] = '\0';
-				if (tree_add(t, word) != WORD_DUPLICATE)
+				word_address = strdup(word);
+				if (tree_add(t, word_address) != WORD_DUPLICATE)
 					(*distinct_words)++;
 				word[0] = '\0';
 				word_index = 0;

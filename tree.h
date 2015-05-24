@@ -18,11 +18,11 @@ struct tnode {
 /* Returns NULL */
 struct tnode *tree_create();
 
-/* Deallocates memory and returns NULL */
+/* Deallocates memory for the tree and returns NULL */
 struct tnode *tree_destroy(struct tnode *t);
 
-/* Adds an element to the tree */
-enum word_result tree_add(struct tnode **t, char *c);
+/* Adds the address of a string to the tree */
+enum word_result tree_add(struct tnode **t, char *w);
 
 /* Prints the tree, smaller (lexicographically) to larger */
 void tree_print(struct tnode *h);
