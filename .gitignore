@@ -6,6 +6,6 @@ out*
 *.o
 *words*
 Makefile.compare
-compare.cc
+compare*
 check.sh
 maitreyi

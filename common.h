@@ -13,8 +13,8 @@
 #define FOREVER		(1)
 #define LINE_LEN	(10000)
 #define WORD_LEN	(30)
-#define IGNORED		("\"!.,?:():_*$%^&")
 #define SEP		("\n- ")
+#define WORD_NOT_FOUND	(-1)
 
 
 /* Defined when compiling */

@@ -36,7 +36,7 @@ struct wgraph *wgraph_destroy(struct wgraph *g)
 }
 
 /* Adds a vertex to the graph */
-void wgraph_add(struct wgraph *g, char *p, char *w, int position)
+void wgraph_add(struct wgraph *g, char *prev, char *current, int position)
 {
 	/* Adding a new word */
 	if (position == g->size) {
@@ -46,14 +46,14 @@ void wgraph_add(struct wgraph *g, char *p, char *w, int position)
 					g->mem_alloc * sizeof(struct vertex));
 		}
 
-		g->nodes[position].word = p;
+		g->nodes[position].word = prev;
 		g->nodes[position].count = 1;
 		g->nodes[position].adj = list_create();
-		list_add(&g->nodes[position].adj, w);
+		list_add(&g->nodes[position].adj, current);
 		g->size++;
 	} else {
 		g->nodes[position].count++;
-		list_add(&g->nodes[position].adj, w);
+		list_add(&g->nodes[position].adj, current);
 	}
 }
 
@@ -139,4 +139,17 @@ enum word_result wgraph_calculate_costs(struct wgraph *g,
 			l->cost = 1 + max_odds - l->cost;
 
 	return WORD_SUCCESS;
+}
+
+/* Returns the cost between two words */
+float wgraph_get_cost(struct wgraph *g, struct tnode *t,
+		char *word, char *neighbour)
+{
+	int index;
+
+	index = tree_search(t, word);
+	if (index == WORD_NOT_FOUND)
+		return WORD_NOT_FOUND;
+
+	return list_get_cost(g->nodes[index].adj, neighbour);
 }

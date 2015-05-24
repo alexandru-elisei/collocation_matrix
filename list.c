@@ -62,3 +62,16 @@ void list_print(struct lnode *l)
 	for (; l != NULL; l = l->next)
 		printf(" %-11s - %3d (cost %g)\n", l->word, l->count, l->cost);
 }
+
+/* Gets the cost for a word */
+float list_get_cost(struct lnode *l, char *w)
+{
+	if (l == NULL)
+		return WORD_NOT_FOUND;
+
+	for (; l != NULL; l = l->next)
+		if (strcmp(l->word, w) == 0)
+			return l->cost;
+
+	return WORD_NOT_FOUND;
+}

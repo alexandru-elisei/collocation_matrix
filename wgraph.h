@@ -29,14 +29,15 @@ struct wgraph *wgraph_create();
 struct wgraph *wgraph_destroy(struct wgraph *g);
 
 /* Adds a vertex to the graph */
-void wgraph_add(struct wgraph *g, char *p, char *w, int position);
+void wgraph_add(struct wgraph *g, char *prev, char *current, int position);
 
 /* Calculates the costs between vertices */
 enum word_result wgraph_calculate_costs(struct wgraph *g,
 		struct tnode *t, unsigned int total_words);
 
 /* Returns the cost between two words */
-float wgraph_get_cost(struct wgraph *g, char *node, char *neighbour);
+float wgraph_get_cost(struct wgraph *g, struct tnode *t,
+		char *word, char *neighbour);
 
 /* Checks for an empty graph */
 enum word_result wgraph_empty(struct wgraph *g);

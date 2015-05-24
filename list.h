@@ -23,6 +23,9 @@ struct lnode *list_destroy(struct lnode *l);
 /* Adds a word to the list, making sure there are no duplicates */
 enum word_result list_add(struct lnode **l, char *w);
 
+/* Gets the cost for a word */
+float list_get_cost(struct lnode *l, char *w);
+
 /* Prints the list */
 void list_print(struct lnode *l);
 

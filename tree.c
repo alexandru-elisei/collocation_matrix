@@ -69,7 +69,7 @@ int tree_search(struct tnode *t, char *w)
 	int equal;
 
 	if (t == NULL)
-		return -1;
+		return WORD_NOT_FOUND;
 
 	while (FOREVER) {
 		equal = strcmp(w, t->word);
@@ -82,7 +82,7 @@ int tree_search(struct tnode *t, char *w)
 
 		/* Word not found */
 		if (t == NULL)
-			return -1;
+			return WORD_NOT_FOUND;
 	}
 }
 

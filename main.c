@@ -67,11 +67,11 @@ int main(int argc, char **argv)
 	CHKRES(get_input(in, &text, &cost_words, &cost_no,
 				&min_words, &min_no,
 				&fixed_words, &fixed_lengths, &fixed_no));
-#ifdef DEBUG
 	printf("\ncost_words:\n");
 	for (i = 0; i < cost_no * 2; i++)
 		printf("|%s|\n", cost_words[i]);
 
+	/*
 	printf("\nmin_words:\n");
 	for (i = 0; i < min_no * 2; i++)
 		printf("|%s|\n", min_words[i]);
@@ -79,19 +79,31 @@ int main(int argc, char **argv)
 	printf("\nfixed_words:\n");
 	for (i = 0; i < fixed_no; i++)
 		printf("%d - |%s|\n", fixed_lengths[i], fixed_words[i]);
-#endif
+	*/
+
 	search_tree = tree_create();
 	word_graph = wgraph_create();
 
 	get_text(text, &search_tree, &total_words, word_graph);
+
+	/*
 	printf("\ntree:\n");
 	tree_print(search_tree);
 	printf("\ngraph:\n");
 	wgraph_print(word_graph);
+	*/
 
 	wgraph_calculate_costs(word_graph, search_tree, total_words);
+
+	/*
 	printf("\nafter odds:\n");
 	wgraph_print(word_graph);
+	*/
+
+	for (i = 0; i < cost_no; i++)
+		fprintf(out, "%g\n", wgraph_get_cost(word_graph,
+					search_tree, cost_words[2*i],
+					cost_words[2*i+1]));
 
 	search_tree = tree_destroy(search_tree);
 	word_graph = wgraph_destroy(word_graph);
