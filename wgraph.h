@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "list.h"
+#include "tree.h"
 
 struct vertex {
 	char *word;
@@ -16,6 +17,7 @@ struct vertex {
 
 struct wgraph {
 	struct vertex *nodes;
+	int last_word_index;	/* there's no word after the last word */
 	unsigned int size;
 	unsigned int mem_alloc;
 };
@@ -31,7 +33,10 @@ void wgraph_add(struct wgraph *g, char *p, char *w, int position);
 
 /* Calculates the costs between vertices */
 enum word_result wgraph_calculate_costs(struct wgraph *g,
-		unsigned int total_words);
+		struct tnode *t, unsigned int total_words);
+
+/* Returns the cost between two words */
+float wgraph_get_cost(struct wgraph *g, char *node, char *neighbour);
 
 /* Checks for an empty graph */
 enum word_result wgraph_empty(struct wgraph *g);

@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "wgraph.h"
 
 /* Memory allocation increment */
@@ -82,16 +84,59 @@ enum word_result wgraph_empty(struct wgraph *g)
 
 /* Calculates the costs between vertices */
 enum word_result wgraph_calculate_costs(struct wgraph *g,
-		unsigned int total_words)
+		struct tnode *t, unsigned int total_words)
 {
+	struct lnode *l;
+	enum word_result r;
+
 	int i;
 	int o11, o12, o21, o22;
-	enum word_result r;
+	int tmp_index;
+	float max_odds; 
 
 	if ((r = wgraph_empty(g)) != WORD_GRAPH_NOT_EMPTY)
 		return r;
 
-	for (i = 0; i < g->size; i++) {
-	}
-}
+	/* Calculating the odds */
+	max_odds = -1;
+	for (i = 0; i < g->size; i++)
+		for (l = g->nodes[i].adj; l != NULL; l = l->next) {
+			/* How many times l appeared after node i */
+			o11 = l->count;
 
+			/* 
+			 * How many times node i appeared minus the times it
+			 * appeared next to l 
+			 */
+			if (i != g->last_word_index) 
+				o12 = g->nodes[i].count - o11;
+			/* 
+			 * If it's the last word, we subtract 1 because there's
+			 * no other word after it.
+			 */
+			else
+				o12 = g->nodes[i].count - o11 - 1;
+
+			/* 
+			 * How many times l appeared minus the times it appeared
+			 * after node i
+			 */
+			tmp_index = tree_search(t, l->word);
+			o21 = g->nodes[tmp_index].count - o11;
+
+			o22 = (total_words - 1) - o11 - o12 - o21;
+
+			l->cost = log(o11 + 0.5) + log(o22 + 0.5) -
+				log(o12 + 0.5) - log(o21 + 0.5);
+
+			if (max_odds < l->cost)
+				max_odds = l->cost;
+		}
+
+	/* Calculating the costs */
+	for (i = 0; i < g->size; i++)
+		for (l = g->nodes[i].adj; l != NULL; l = l->next)
+			l->cost = 1 + max_odds - l->cost;
+
+	return WORD_SUCCESS;
+}

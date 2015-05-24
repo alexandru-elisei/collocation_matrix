@@ -89,17 +89,9 @@ int main(int argc, char **argv)
 	printf("\ngraph:\n");
 	wgraph_print(word_graph);
 
-	/*
-	printf("total_words = %d\n", total_words);
-	printf("distinct_words = %d\n", distinct_words);
-	*/
-	
-
-	/*
-	printf("index of fisier = %d\n", tree_search(search_tree, "fisier"));
-	printf("index of scurte = %d\n", tree_search(search_tree, "scurte"));
-	printf("index of inexistent = %d\n", tree_search(search_tree, "e"));
-	*/
+	wgraph_calculate_costs(word_graph, search_tree, total_words);
+	printf("\nafter odds:\n");
+	wgraph_print(word_graph);
 
 	search_tree = tree_destroy(search_tree);
 	word_graph = wgraph_destroy(word_graph);
@@ -228,6 +220,7 @@ enum word_result get_text(FILE *text, struct tnode **t,
 	/* Adding the last word */
 	graph_index = tree_add(t, word_shared_address, graph->size);
 	wgraph_add(graph, word_shared_address, NULL, graph_index);
+	graph->last_word_index = graph_index;
 
 	return WORD_SUCCESS;
 }

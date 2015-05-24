@@ -20,7 +20,7 @@ OBJS = $(SOURCES:%.c=%.o)
 build: $(PROG)
 
 $(PROG): $(OBJS) $(HEADERS)
-	$(CC) $(OBJS) -o $(PROG) $(CFLAGS)
+	$(CC) $(OBJS) -lm -o $(PROG) $(CFLAGS)
 	
 %.o: %.c
 	$(CC) -c $^ -o $@ $(CFLAGS) -O2
