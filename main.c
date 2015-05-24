@@ -86,18 +86,10 @@ int main(int argc, char **argv)
 	printf("\ntree:\n");
 	tree_print(search_tree);
 
+	/*
 	printf("total_words = %d\n", total_words);
 	printf("distinct_words = %d\n", distinct_words);
-
-#ifdef DEBUG
-	l = list_create();
-	list_add(&l, "test");
-	list_add(&l, "mode");
-	list_add(&l, "mode");
-	list_add(&l, "twice");
-
-	list_print(l);
-#endif
+	*/
 
 	return EXIT_SUCCESS;
 }
@@ -165,8 +157,9 @@ enum word_result get_text(FILE *text, struct tnode **t,
 	char buffer[LINE_LEN];
 	char word[WORD_LEN], prev[WORD_LEN];
 	/* The address is shared between the search tree and the graph */
-	char *word_address;
+	char *word_shared_address;
 	int word_index;
+	int graph_index;
 	int i;
 
 	*total_words = 0;
@@ -191,9 +184,14 @@ enum word_result get_text(FILE *text, struct tnode **t,
 			} else if (strchr(SEP, buffer[i]) != NULL &&
 					word[0] != '\0') {
 				word[word_index] = '\0';
-				word_address = strdup(word);
-				if (tree_add(t, word_address) != WORD_DUPLICATE)
+				word_shared_address = strdup(word);
+
+				graph_index = tree_add(t, word_shared_address, 
+						*distinct_words);
+				/* I inserted a new word in the tree */
+				if (graph_index == *distinct_words)
 					(*distinct_words)++;
+
 				word[0] = '\0';
 				word_index = 0;
 				(*total_words)++;
