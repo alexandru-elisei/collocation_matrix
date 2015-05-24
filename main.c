@@ -157,9 +157,14 @@ enum word_result get_text(FILE *text, struct tnode **t)
 			/* All lower case */
 			if (buffer[i] >= 'A' && buffer[i] <= 'Z') {
 				word[word_index++] = buffer[i] - 'A' + 'a';
-			/* Digits and "'" too */
-			} else if ((buffer[i] >= '0' && buffer[i] <= '9') ||
-					buffer[i] == '\'') {
+			/* Lower case letters */
+			} else if (buffer[i] >= 'a' && buffer[i] <= 'z') {
+				word[word_index++] = buffer[i];
+			/* Digits */
+			} else if (buffer[i] >= '0' && buffer[i] <= '9') {
+				word[word_index++] = buffer[i];
+			/* And "'" */
+			} else if (buffer[i] == '\'') {
 				word[word_index++] = buffer[i];
 			/* Words have at least one letter/digit/' */
 			} else if (strchr(SEP, buffer[i]) != NULL &&
