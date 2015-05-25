@@ -141,15 +141,22 @@ enum word_result wgraph_calculate_costs(struct wgraph *g,
 	return WORD_SUCCESS;
 }
 
-/* Returns the cost between two words */
-float wgraph_get_cost(struct wgraph *g, struct tnode *t,
-		char *word, char *neighbour)
+/* Returns the cost between two words, where the starting node is a word */
+float wgraph_cost_by_name(struct wgraph *g, struct tnode *t,
+			char *word, char *neighbour)
 {
 	int index;
 
 	index = tree_search(t, word);
 	if (index == WORD_NOT_FOUND)
-		return WORD_NOT_FOUND;
+		return INF;
 
+	return list_get_cost(g->nodes[index].adj, neighbour);
+}
+
+/* Returns the cost between two words, where the starting node is an index */
+float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
+			int index, char *neighbour)
+{
 	return list_get_cost(g->nodes[index].adj, neighbour);
 }

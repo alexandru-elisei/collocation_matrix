@@ -9,6 +9,7 @@ PROG = "words"
 HEADERS = common.h			\
 	  list.h			\
 	  wgraph.h			\
+	  pqueue.h			\
 	  tree.h
 
 SOURCES = main.c			\

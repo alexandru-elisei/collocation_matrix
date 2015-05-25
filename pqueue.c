@@ -2,25 +2,25 @@
 
 #define HEAP_MEM_INC	(20)
 
-static struct stripped_graph_node {
+struct stripped_graph_node {
 	int index;			/* index in the graph */
 	float cost;			/* path cost */
 };
 
-static struct heap {
-	struct stripped_graph_nodes *nodes;
+struct heap {
+	struct stripped_graph_node *nodes;
 	unsigned int size;
 	unsigned int mem_alloc;
 };
 
 /* Inserts a new element into the heap */
-enum word_result (*insert)(struct lnode *node)
+enum word_result (*insert)(int index, float cost)
 {
 	return WORD_SUCCESS;
 }
 
 /* Returns and removes the min cost node */
-int extract_min()
+int get_min()
 {
 	return -1;
 }
@@ -36,7 +36,7 @@ static void sift_down(unsigned int root)
 }
 
 /* Prints the heap */
-static enum word_result print()
+static enum word_result print();
 
 /* The priority queue is stored internally as a heap */
 static struct heap *h = NULL;	
@@ -56,7 +56,7 @@ struct pqueue *pqueue_create()
 	ret = (struct pqueue *)malloc(sizeof(struct pqueue));
 	ret->insert = insert;
 	ret->print = print;
-	ret->extract_min = extract_min;
+	ret->get_min = get_min;
 
 	h = (struct heap *) malloc(sizeof(struct heap));
 	if (h == NULL)
@@ -77,7 +77,7 @@ struct pqueue *pqueue_destroy(struct pqueue *pq)
 	free(h->nodes);
 	free(h);
 	h = NULL;
-	free(*pq);
+	free(pq);
 
 	return NULL;
 }
@@ -99,7 +99,6 @@ static enum word_result print()
 	return WORD_SUCCESS;
 }
 
-#if 0
 /* Inserts a new element into the heap */
 static enum huf_result insert(struct tmp_huf_node *c, uint16_t index)
 {
@@ -198,5 +197,4 @@ static enum huf_result sift_down(uint16_t root)
 
 	return HUF_SUCCESS;
 }
-#endif
 		

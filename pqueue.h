@@ -9,7 +9,7 @@
 #include "list.h"
 
 struct pqueue {
-	enum word_result (*insert)(struct lnode *node);
+	enum word_result (*insert)(int index, float cost);
 	int (*get_min)();			
 	enum word_result (*print)();
 };

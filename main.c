@@ -93,11 +93,10 @@ int main(int argc, char **argv)
 	*/
 
 	for (i = 0; i < cost_no; i++)
-		fprintf(out, "%g\n", wgraph_get_cost(word_graph,
-					search_tree, cost_words[2*i],
-					cost_words[2*i+1]));
+		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
+			search_tree, cost_words[2*i], cost_words[2*i+1]));
 
-	printf("destroying search_tree\n");
+	//printf("destroying search_tree\n");
 	search_tree = tree_destroy(search_tree);
 	word_graph = wgraph_destroy(word_graph);
 	for (i = 0; i < cost_no; i++) {

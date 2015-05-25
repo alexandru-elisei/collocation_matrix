@@ -67,11 +67,11 @@ void list_print(struct lnode *l)
 float list_get_cost(struct lnode *l, char *w)
 {
 	if (l == NULL)
-		return WORD_NOT_FOUND;
+		return INF;
 
 	for (; l != NULL; l = l->next)
 		if (strcmp(l->word, w) == 0)
 			return l->cost;
 
-	return WORD_NOT_FOUND;
+	return INF;
 }
