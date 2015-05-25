@@ -17,22 +17,14 @@
 		}						\
 	} while (0)		
 
-#define LOWER(s)						\
-	do {							\
-		int i;						\
-		for (i = 0; s[i] != '\0'; i++)			\
-			if (s[i] >= 'A' && s[i] <= 'Z')		\
-				s[i] = s[i] + 32;		\
-	} while (0)
-
 /* Reads the input file */
 enum word_result get_input(FILE *in, FILE **text, 
 		char ***cost, int *cost_no,
 		char ***min, int *min_no,
 		char ***fixed_words, int **fixed_lengths, int *fixed_no);
 
-/* Reads the text file */
-enum word_result get_text(FILE *text, struct tnode **t, 
+/* Parses the text file, building the binary word search tree and the graph */
+enum word_result parse_text(FILE *text, struct tnode **t, 
 		unsigned int *total_words, struct wgraph *graph);
 
 int main(int argc, char **argv)
@@ -84,7 +76,7 @@ int main(int argc, char **argv)
 	search_tree = tree_create();
 	word_graph = wgraph_create();
 
-	get_text(text, &search_tree, &total_words, word_graph);
+	parse_text(text, &search_tree, &total_words, word_graph);
 
 	/*
 	printf("\ntree:\n");
@@ -105,8 +97,25 @@ int main(int argc, char **argv)
 					search_tree, cost_words[2*i],
 					cost_words[2*i+1]));
 
+	printf("destroying search_tree\n");
 	search_tree = tree_destroy(search_tree);
 	word_graph = wgraph_destroy(word_graph);
+	for (i = 0; i < cost_no; i++) {
+		free(cost_words[2*i]);
+		free(cost_words[2*i+1]);
+	}
+	free(cost_words);
+
+	for (i = 0; i < min_no; i++) {
+		free(min_words[2*i]);
+		free(min_words[2*i+1]);
+	}
+	free(min_words);
+
+	for (i = 0; i < fixed_no; i++)
+		free(fixed_words[i]);
+	free(fixed_words);
+	free(fixed_lengths);
 
 	fclose(in);
 	fclose(out);
@@ -122,7 +131,6 @@ enum word_result get_input(FILE *in, FILE **text,
 {
 	char buffer[LINE_LEN];
 	int i;
-	int index;
 
 	fgets(buffer, LINE_LEN, in);
 	buffer[strlen(buffer) - 1] = '\0';
@@ -134,11 +142,10 @@ enum word_result get_input(FILE *in, FILE **text,
 
 	/* Reading the words we need to print the cost */
 	*cost = (char **) malloc((2 * (*cost_no)) * sizeof(char *));
-	index = 0;
 	for (i = 0; i < *cost_no; i++) {
 		fgets(buffer, LINE_LEN, in);
-		(*cost)[index++] = strdup(strtok(buffer, SEP));
-		(*cost)[index++] = strdup(strtok(NULL, SEP));
+		(*cost)[2*i] = strdup(strtok(buffer, SEP));
+		(*cost)[2*i+1] = strdup(strtok(NULL, SEP));
 	}
 
 	fgets(buffer, LINE_LEN, in);
@@ -146,11 +153,10 @@ enum word_result get_input(FILE *in, FILE **text,
 
 	/* Reading the words we need to calculate the minimum cost path */
 	*min = (char **) malloc((2 * (*min_no)) * sizeof(char *));
-	index = 0;
 	for (i = 0; i < *min_no; i++) {
 		fgets(buffer, LINE_LEN, in);
-		(*min)[index++] = strdup(strtok(buffer, SEP));
-		(*min)[index++] = strdup(strtok(NULL, SEP));
+		(*min)[2*i] = strdup(strtok(buffer, SEP));
+		(*min)[2*i+1] = strdup(strtok(NULL, SEP));
 	}
 
 	fgets(buffer, LINE_LEN, in);
@@ -159,20 +165,18 @@ enum word_result get_input(FILE *in, FILE **text,
 	/* Reading the words we need for the fixed length path */
 	*fixed_words = (char **) malloc(*fixed_no * sizeof(char *));
 	*fixed_lengths = (int *) malloc(*fixed_no * sizeof(int));
-	index = 0;
 	for (i = 0; i < *fixed_no; i++) {
 		fgets(buffer, LINE_LEN, in);
-
 		sscanf(buffer, "%d", &((*fixed_lengths)[i]));
 		strtok(buffer, SEP);
-		(*fixed_words)[index++] = strdup(strtok(NULL, SEP));
+		(*fixed_words)[i] = strdup(strtok(NULL, SEP));
 	}
 
 	return WORD_SUCCESS;
 }
 
-/* Reads the text file */
-enum word_result get_text(FILE *text, struct tnode **t, 
+/* Parses the text file, building the binary word search tree and the graph */
+enum word_result parse_text(FILE *text, struct tnode **t, 
 		unsigned int *total_words, struct wgraph *graph)
 {
 	char buffer[LINE_LEN];
