@@ -17,7 +17,9 @@ void word_print_result(enum word_result msg)
 	else if (msg == WORD_ERROR_EMPTY_LIST)
 		PRINTERR("Empty list supplied.\n");
 	else if (msg == WORD_ERROR_GRAPH_NOT_INITIALIZED)
-		PRINTERR("Empty list supplied.\n");
+		PRINTERR("Empty graph supplied.\n");
+	else if (msg == WORD_ERROR_HEAP_NOT_INITIALIZED)
+		PRINTERR("Empty heap supplied.\n");
 	else if (msg == WORD_ERROR_UNKNOWN_ERROR)
 		PRINTERR("Unknown error occured.\n");
 }
