@@ -10,6 +10,7 @@
 struct lnode {
 	char *word;
 	unsigned int count;	/* how many times the node appears */
+	uint8_t visited;
 	float cost;
 	struct lnode *next;
 };

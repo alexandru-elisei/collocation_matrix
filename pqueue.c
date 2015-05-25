@@ -37,6 +37,7 @@ void update_node(int graph_index, float new_cost);
 /* The priority queue is stored internally as a heap */
 static struct heap *h = NULL;	
 static int *map_graph_to_heap = NULL;	/* maps graph index to heap index */
+static int map_size;
 
 static inline int get_parent(int index)
 {
@@ -52,6 +53,7 @@ static inline int get_parent(int index)
 static inline void delete_node(int index)
 {
 	map_graph_to_heap[h->nodes[index].index] = NODE_NOT_FOUND;
+
 	h->nodes[index] = h->nodes[h->size - 1];
 	h->size--;
 	sift_down(index);
@@ -61,6 +63,7 @@ static inline void delete_node(int index)
 struct pqueue *pqueue_create(int graph_size)
 {
 	struct pqueue *ret;
+	int i;
 
 	ret = (struct pqueue *)malloc(sizeof(struct pqueue));
 	ret->insert = insert;
@@ -78,7 +81,12 @@ struct pqueue *pqueue_create(int graph_size)
 	h->mem_alloc = HEAP_MEM_INC;
 	h->nodes = (struct stripped_graph_node *)malloc(
 		h->mem_alloc * sizeof(struct stripped_graph_node));
+
+	/* Allocating memory for the map array */
 	map_graph_to_heap = (int *)malloc(graph_size * sizeof(int));
+	map_size = graph_size;
+	for (i = 0; i < map_size; i++)
+		map_graph_to_heap[i] = NODE_NOT_FOUND;
 
 	return ret;
 }
@@ -89,6 +97,8 @@ struct pqueue *pqueue_destroy(struct pqueue *pq)
 	free(h->nodes);
 	free(h);
 	h = NULL;
+	free(map_graph_to_heap);
+	map_graph_to_heap = NULL;
 	free(pq);
 
 	return NULL;
@@ -106,6 +116,11 @@ static enum word_result print()
 	for (i = 0; i < h->size; i++)
 		printf("%d: index = %3d, cost = %6.6g\n",
 				i, h->nodes[i].index, h->nodes[i].cost);
+	printf("\n");
+
+	printf("\n\t\tmap:\n");
+	for (i = 0; i < map_size; i++)
+//		printf("%4d(%4d) ", i, map_graph_to_heap[i]);
 	printf("\n");
 
 	return WORD_SUCCESS;
@@ -183,10 +198,10 @@ static enum word_result sift_down(int root)
 	int last_index;
 	int min;
 
-	if (h == NULL || h->size == 0)
+	if (h == NULL)
 		return WORD_ERROR_QUEUE_NOT_INITIALIZED;
 
-	if (h->size == 1)
+	if (h->size == 0)
 		return WORD_SUCCESS;
 
 	/* Moving the root downwards */
@@ -231,6 +246,7 @@ int extract_min()
 
 	res = h->nodes[0].index;
 	delete_node(0);
+//	printf("new position for node %d is %d\n", res, map_graph_to_heap[res]);
 
 	return res;
 }
@@ -240,7 +256,7 @@ void update_node(int graph_index, float new_cost)
 {
 	int i;
 
-	if (h == NULL || h->size == 0)
+	if (h == NULL)
 		return;
 
 	/* 
@@ -250,10 +266,12 @@ void update_node(int graph_index, float new_cost)
 	for (i = 0; i < h->size; i++)
 		if (h->nodes[i].index == graph_index)
 			break;
-	/* Node not found */
-	if (i == h->size)
-		return;
 
-	delete_node(i);
-	insert(graph_index, new_cost);
+	/* Node not found */
+	if (i == h->size) {
+		insert(graph_index, new_cost);
+	} else {
+		delete_node(i);
+		insert(graph_index, new_cost);
+	}
 }

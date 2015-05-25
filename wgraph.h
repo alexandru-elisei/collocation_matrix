@@ -12,6 +12,7 @@
 
 struct vertex {
 	char *word;
+	uint8_t	visited;
 	unsigned int count;	/* how many times the word appears */
 	struct lnode *adj;	/* adjancency list */
 };
@@ -53,6 +54,13 @@ enum word_result wgraph_empty(struct wgraph *g);
  */
 char **wgraph_min_path(struct wgraph *g, struct tnode *t,
 	       	char *start, char *end);
+
+/* 
+ * Finds the fixed cost path between two words.
+ * Returns a pointer to an array of words that are part of the path
+ */
+char **wgraph_fixed_path(struct wgraph *g, struct tnode *t,
+	       	int length, char *end);
 
 /* Prints the graph */
 void wgraph_print(struct wgraph *g);

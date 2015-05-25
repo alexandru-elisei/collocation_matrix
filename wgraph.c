@@ -161,6 +161,13 @@ float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
 	return list_get_cost(g->nodes[index].adj, neighbour);
 }
 
+void print_path(struct wgraph *g, int *p, int start, int end)
+{
+	if (p[end] != start)
+		print_path(g, p, start, p[end]);
+	printf("[ %s - %s ]", g->nodes[p[end]].word, g->nodes[end].word); 
+}
+
 /* 
  * Finds the minimum cost path between two words.
  * Returns a pointer to an array of words that are part of the path
@@ -216,28 +223,55 @@ char **wgraph_min_path(struct wgraph *g, struct tnode *t,
 		pq->insert(neighbour_index, l->cost);
 	}
 
+	min_index = g->size;
 	while (pq->is_empty() != 1) {
 		min_index = pq->extract_min();
+	//	printf("\nmin_index = %d\n", min_index);
+	//	printf("end_index = %d\n\n", end_index);
 		if (min_index == end_index)
 			break;
 
 		/* Updating the costs by using the newly found partial min path */
 		for (l = g->nodes[min_index].adj; l != NULL; l = l->next) {
 			neighbour_index = tree_search(t, l->word);
+	//		printf("neighbour_index = %d\n", neighbour_index);
+	//		printf("cost[ni] = %g\n", costs[neighbour_index]);
 			new_cost = costs[min_index] + l->cost;
+	//		printf("new_cost = %g\n", new_cost);
 
 			if (new_cost < costs[neighbour_index]) {
 				costs[neighbour_index] = new_cost;
 				prev[neighbour_index] = min_index;
-				/*
-				pq->delete_node(neighbour_index);
-				pq->insert(neighbour_index, new_cost);
-				*/
+				pq->update_node(neighbour_index, new_cost);
 			}
 		}
 	}
 
-	pq->print();
+	/*
 	for (i = 0; i < g->size; i++)
 		printf("cost de la %s la %s: %g\n", start, g->nodes[i].word, costs[i]);
+
+	for (i = 0; i < g->size; i++)
+		printf("%d -> %d |", prev[i], i);
+	puts("");
+	*/
+
+	if (min_index == end_index)
+		print_path(g, prev, start_index, end_index);
+	else
+		printf("path impossible.\n");
+}
+
+/* 
+ * Finds the fixed cost path between two words.
+ * Returns a pointer to an array of words that are part of the path
+ */
+char **wgraph_fixed_path(struct wgraph *g, struct tnode *t,
+	       	int length, char *end)
+{
+	int *nodes;
+	int len;
+
+	nodes = (int *)malloc(g->size * sizeof(int));
+	len = 0;
 }
