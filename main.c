@@ -2,6 +2,7 @@
 #include "list.h"
 #include "tree.h"
 #include "wgraph.h"
+#include "pqueue.h"
 
 #define CHKRES(r)						\
 	do { 							\
@@ -35,6 +36,7 @@ int main(int argc, char **argv)
 
 	struct tnode *search_tree;
 	struct wgraph *word_graph = NULL;
+	struct pqueue *pri_queue;
 	
 	char **cost_words;	/* words needed for printing the cost */
 	int cost_no;		/* number of words in the cost_words array */
@@ -95,6 +97,21 @@ int main(int argc, char **argv)
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
 			search_tree, cost_words[2*i], cost_words[2*i+1]));
+
+	printf("testing heap:\n");
+	pri_queue = pqueue_create();
+	pri_queue->insert(22, 23.93);
+	pri_queue->insert(1, 2.33);
+	pri_queue->insert(3, 1.33);
+	pri_queue->insert(19, 5.00);
+	pri_queue->insert(20, 3.00);
+	pri_queue->insert(21, 4.00);
+	pri_queue->print();
+
+	printf("%d\n", pri_queue->extract_min());
+	printf("%d\n", pri_queue->extract_min());
+	printf("%d\n", pri_queue->extract_min());
+	printf("%d\n", pri_queue->extract_min());
 
 	//printf("destroying search_tree\n");
 	search_tree = tree_destroy(search_tree);

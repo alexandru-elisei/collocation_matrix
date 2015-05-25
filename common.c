@@ -18,8 +18,8 @@ void word_print_result(enum word_result msg)
 		PRINTERR("Empty list supplied.\n");
 	else if (msg == WORD_ERROR_GRAPH_NOT_INITIALIZED)
 		PRINTERR("Empty graph supplied.\n");
-	else if (msg == WORD_ERROR_HEAP_NOT_INITIALIZED)
-		PRINTERR("Empty heap supplied.\n");
+	else if (msg == WORD_ERROR_QUEUE_NOT_INITIALIZED)
+		PRINTERR("Empty queue supplied.\n");
 	else if (msg == WORD_ERROR_UNKNOWN_ERROR)
 		PRINTERR("Unknown error occured.\n");
 }

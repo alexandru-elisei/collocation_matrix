@@ -14,32 +14,33 @@ struct heap {
 };
 
 /* Inserts a new element into the heap */
-enum word_result (*insert)(int index, float cost)
-{
-	return WORD_SUCCESS;
-}
+enum word_result insert(int index, float cost);
 
 /* Returns and removes the min cost node */
-int get_min()
-{
-	return -1;
-}
+int extract_min();
 
 /* Rearranges the heap from the bottom up so the heap conditions are met */
-static void sift_up()
-{
-}
+static enum word_result sift_up();
 
 /* Rearranges the heap from the top down so the heap conditions are met */
-static void sift_down(unsigned int root)
-{
-}
+static enum word_result sift_down(unsigned int root);
 
 /* Prints the heap */
 static enum word_result print();
 
 /* The priority queue is stored internally as a heap */
 static struct heap *h = NULL;	
+
+static inline int get_parent(int index)
+{
+	if (index == 1 || index == 0 || index == 2)
+		return 0;
+
+	if (index % 2 == 0)
+		return index / 2 - 1; 
+	else
+		return index / 2;
+}
 
 static inline void delete_node(unsigned int index)
 {
@@ -56,7 +57,7 @@ struct pqueue *pqueue_create()
 	ret = (struct pqueue *)malloc(sizeof(struct pqueue));
 	ret->insert = insert;
 	ret->print = print;
-	ret->get_min = get_min;
+	ret->extract_min = extract_min;
 
 	h = (struct heap *) malloc(sizeof(struct heap));
 	if (h == NULL)
@@ -88,7 +89,7 @@ static enum word_result print()
 	int i;
 
 	if (h == NULL || h->size == 0)
-		return WORD_ERROR_HEAP_NOT_INITIALIZED;
+		return WORD_ERROR_QUEUE_NOT_INITIALIZED;
 
 	printf("\n\t\theap:\n");
 	for (i = 0; i < h->size; i++)
@@ -100,20 +101,23 @@ static enum word_result print()
 }
 
 /* Inserts a new element into the heap */
-static enum huf_result insert(struct tmp_huf_node *c, uint16_t index)
+enum word_result insert(int index, float cost)
 {
-	enum huf_result r;
-	uint16_t pos;
+	enum word_result r;
+	unsigned int pos;
 
 	if (h == NULL)
-		return HUF_ERROR_QUEUE_NOT_INITIALIZED;
+		return WORD_ERROR_QUEUE_NOT_INITIALIZED;
 
-	if (h->size == h->max_size)
-		return HUF_ERROR_QUEUE_SIZE_EXCEEDED;
+	if (h->size == h->mem_alloc) {
+		h->mem_alloc += HEAP_MEM_INC;
+		h->nodes = (struct stripped_graph_node *)realloc(h->nodes,
+			h->mem_alloc * sizeof(struct stripped_graph_node));
+	}
 
 	pos = h->size;
-	h->huf_nodes[pos].freq = c->freq;
-	h->huf_nodes[pos].index = index;
+	h->nodes[pos].index = index;
+	h->nodes[pos].cost = cost;
 	h->size++;
 
 	r = sift_up();
@@ -122,50 +126,50 @@ static enum huf_result insert(struct tmp_huf_node *c, uint16_t index)
 }
 
 /* Rearranges the heap from the bottom up so the heap conditions are met */
-static enum huf_result sift_up()
+static enum word_result sift_up()
 {
-	struct heap_huf_node tmp;
+	struct stripped_graph_node tmp;
 	int index, parent;
 
 	if (h == NULL || h->size == 0)
-		return HUF_ERROR_QUEUE_NOT_INITIALIZED;
+		return WORD_ERROR_QUEUE_NOT_INITIALIZED;
 
 	if (h->size == 1)
-		return HUF_SUCCESS;
+		return WORD_SUCCESS;
 
 	index = h->size - 1;
 	parent = get_parent(index);
-	tmp = h->huf_nodes[index];
+	tmp = h->nodes[index];
 
 	/* Moving the last element up the heap until heap conditions are met */
-	while (index > 0 && h->huf_nodes[parent].freq > tmp.freq) {
-		h->huf_nodes[index] = h->huf_nodes[parent];
+	while (index > 0 && h->nodes[parent].cost > tmp.cost) {
+		h->nodes[index] = h->nodes[parent];
 		index = parent;
 		parent = get_parent(index);
 	}
 
-	h->huf_nodes[index].index = tmp.index;
-	h->huf_nodes[index].freq = tmp.freq;
+	h->nodes[index].index = tmp.index;
+	h->nodes[index].cost = tmp.cost;
 
-	return HUF_SUCCESS;
+	return WORD_SUCCESS;
 }
 
 /* Rearranges the heap from the top down so the heap conditions are met */
-static enum huf_result sift_down(uint16_t root)
+static enum word_result sift_down(unsigned int root)
 {
-	struct heap_huf_node tmp;
+	struct stripped_graph_node tmp;
 	int index, left_child, right_child;
 	int last_index;
 	int min;
 
 	if (h == NULL || h->size == 0)
-		return HUF_ERROR_QUEUE_NOT_INITIALIZED;
+		return WORD_ERROR_QUEUE_NOT_INITIALIZED;
 
 	if (h->size == 1)
-		return HUF_SUCCESS;
+		return WORD_SUCCESS;
 
 	/* Moving the root downwards */
-	tmp = h->huf_nodes[root];
+	tmp = h->nodes[root];
 	index = root;
 	last_index = h->size - 1;
 	/* While we have a left child */
@@ -175,7 +179,7 @@ static enum huf_result sift_down(uint16_t root)
 
 		/* If we have both children we find out which child is smaller */
 		if (right_child <= last_index) {
-			if (h->huf_nodes[left_child].freq <= h->huf_nodes[right_child].freq)
+			if (h->nodes[left_child].cost <= h->nodes[right_child].cost)
 				min = left_child;
 			else
 				min = right_child;
@@ -185,16 +189,26 @@ static enum huf_result sift_down(uint16_t root)
 		}
 
 		/* Root is smaller than both children */
-		if (h->huf_nodes[min].freq >= tmp.freq) {
+		if (h->nodes[min].cost >= tmp.cost) {
 			break;
 		} else {
-			h->huf_nodes[index] = h->huf_nodes[min];
+			h->nodes[index] = h->nodes[min];
 			index = min;
 		}
 	}
-	h->huf_nodes[index].index = tmp.index;
-	h->huf_nodes[index].freq = tmp.freq;
+	h->nodes[index].index = tmp.index;
+	h->nodes[index].cost = tmp.cost;
 
-	return HUF_SUCCESS;
+	return WORD_SUCCESS;
 }
-		
+
+/* Returns and removes the min cost node */
+int extract_min()
+{
+	int res;
+
+	res = h->nodes[0].index;
+	delete_node(0);
+
+	return res;
+}

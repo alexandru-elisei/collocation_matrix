@@ -10,7 +10,7 @@
 
 struct pqueue {
 	enum word_result (*insert)(int index, float cost);
-	int (*get_min)();			
+	int (*extract_min)();			
 	enum word_result (*print)();
 };
 

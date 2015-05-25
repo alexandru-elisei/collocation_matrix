@@ -46,6 +46,13 @@ float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
 /* Checks for an empty graph */
 enum word_result wgraph_empty(struct wgraph *g);
 
+/* 
+ * Finds the minimum cost path between two words.
+ * Returns a pointer to an array of words that are part of the path
+ */
+char **wgraph_min_path(struct wgraph *g, struct tnode *t,
+	       	char *start, char *end);
+
 /* Prints the graph */
 void wgraph_print(struct wgraph *g);
 

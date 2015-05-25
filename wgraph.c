@@ -160,3 +160,19 @@ float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
 {
 	return list_get_cost(g->nodes[index].adj, neighbour);
 }
+
+/* 
+ * Finds the minimum cost path between two words.
+ * Returns a pointer to an array of words that are part of the path
+ */
+char **wgraph_min_path(struct wgraph *g, struct tnode *t,
+	       	char *start, char *end)
+{
+	int index_start, index_end;
+
+	if (wgraph_empty (g) != WORD_GRAPH_NOT_EMPTY)
+		return NULL;
+
+	index_start = tree_search(t, start);
+	index_end = tree_search(t, end);
+}
