@@ -60,7 +60,7 @@ enum word_result list_add(struct lnode **l, char *w)
 void list_print(struct lnode *l)
 {
 	for (; l != NULL; l = l->next)
-		printf(" %-11s - %3d (cost %g)\n", l->word, l->count, l->cost);
+		printf(" %-15s - %3d (cost %g)\n", l->word, l->count, l->cost);
 }
 
 /* Gets the cost for a word */

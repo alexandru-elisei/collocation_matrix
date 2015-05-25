@@ -8,6 +8,7 @@
 #include "common.h"
 #include "list.h"
 #include "tree.h"
+#include "pqueue.h"
 
 struct vertex {
 	char *word;

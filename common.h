@@ -14,7 +14,7 @@
 #define LINE_LEN	(10000)
 #define WORD_LEN	(30)
 #define SEP		("\n- ")
-#define WORD_NOT_FOUND	(-1)
+#define NODE_NOT_FOUND	(-1)
 /* The cost between two words when there's no path between them */
 #define INF		(100000)	
 

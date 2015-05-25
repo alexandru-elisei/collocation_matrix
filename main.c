@@ -61,11 +61,12 @@ int main(int argc, char **argv)
 	CHKRES(get_input(in, &text, &cost_words, &cost_no,
 				&min_words, &min_no,
 				&fixed_words, &fixed_lengths, &fixed_no));
+
+	/*
 	printf("\ncost_words:\n");
 	for (i = 0; i < cost_no * 2; i++)
 		printf("|%s|\n", cost_words[i]);
 
-	/*
 	printf("\nmin_words:\n");
 	for (i = 0; i < min_no * 2; i++)
 		printf("|%s|\n", min_words[i]);
@@ -83,8 +84,6 @@ int main(int argc, char **argv)
 	/*
 	printf("\ntree:\n");
 	tree_print(search_tree);
-	printf("\ngraph:\n");
-	wgraph_print(word_graph);
 	*/
 
 	wgraph_calculate_costs(word_graph, search_tree, total_words);
@@ -99,7 +98,7 @@ int main(int argc, char **argv)
 			search_tree, cost_words[2*i], cost_words[2*i+1]));
 
 	printf("testing heap:\n");
-	pri_queue = pqueue_create();
+	pri_queue = pqueue_create(word_graph->size);
 	pri_queue->insert(22, 23.93);
 	pri_queue->insert(1, 2.33);
 	pri_queue->insert(3, 1.33);
@@ -108,10 +107,25 @@ int main(int argc, char **argv)
 	pri_queue->insert(21, 4.00);
 	pri_queue->print();
 
+	puts("");
+
+	pri_queue->update_node(1, 4.45);
+	pri_queue->print();
+
+	/*
 	printf("%d\n", pri_queue->extract_min());
 	printf("%d\n", pri_queue->extract_min());
 	printf("%d\n", pri_queue->extract_min());
 	printf("%d\n", pri_queue->extract_min());
+	*/
+
+	pri_queue = pqueue_destroy(pri_queue);
+
+	printf("\ngraph:\n");
+	wgraph_print(word_graph);
+
+	//wgraph_min_path(word_graph, search_tree, "linii", "test");
+
 
 	//printf("destroying search_tree\n");
 	search_tree = tree_destroy(search_tree);

@@ -63,7 +63,7 @@ void wgraph_print(struct wgraph *g)
 	int i;
 
 	for (i = 0; i < g->size; i++) {
-		printf("|%-10s| - %3d\n", g->nodes[i].word,
+		printf("[%4d]%-10s - %3d\n", i, g->nodes[i].word,
 				g->nodes[i].count);
 		list_print(g->nodes[i].adj);
 		printf("\n");
@@ -148,7 +148,7 @@ float wgraph_cost_by_name(struct wgraph *g, struct tnode *t,
 	int index;
 
 	index = tree_search(t, word);
-	if (index == WORD_NOT_FOUND)
+	if (index == NODE_NOT_FOUND)
 		return INF;
 
 	return list_get_cost(g->nodes[index].adj, neighbour);
@@ -168,11 +168,76 @@ float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
 char **wgraph_min_path(struct wgraph *g, struct tnode *t,
 	       	char *start, char *end)
 {
-	int index_start, index_end;
+	struct lnode *l;
+	struct pqueue *pq;
+
+	/* 
+	 * Index is the head of the arc, value is the tail of the arc, both
+	 * stored as indices in the graph  
+	 */
+	int *prev;
+	float *costs;	/* cost between start and array index */
+	float new_cost;
+
+	int start_index, end_index, neighbour_index;
+	int min_index;
+	int i;
 
 	if (wgraph_empty (g) != WORD_GRAPH_NOT_EMPTY)
 		return NULL;
 
-	index_start = tree_search(t, start);
-	index_end = tree_search(t, end);
+	start_index = tree_search(t, start);
+	end_index = tree_search(t, end);
+
+	if (start_index == NODE_NOT_FOUND ||
+			end_index == NODE_NOT_FOUND ||
+			g->nodes[start_index].adj == NULL)
+		return NULL;
+
+	pq = pqueue_create(g->size);
+
+	prev = (int *)malloc(g->size * sizeof(int));
+	costs = (float *)malloc(g->size * sizeof(float));
+
+	for (i = 0; i < g->size; i++) {
+		prev[i] = NODE_NOT_FOUND;
+		costs[i] = INF;
+	}
+
+	prev[start_index] = start_index;
+	costs[start_index] = 0;
+
+	for (l = g->nodes[start_index].adj; l != NULL; l = l->next) {
+		neighbour_index = tree_search(t, l->word);
+		costs[neighbour_index] = l->cost;
+		prev[neighbour_index] = start_index;
+
+		/* Adding neighbors of start word to the priority queue */
+		pq->insert(neighbour_index, l->cost);
+	}
+
+	while (pq->is_empty() != 1) {
+		min_index = pq->extract_min();
+		if (min_index == end_index)
+			break;
+
+		/* Updating the costs by using the newly found partial min path */
+		for (l = g->nodes[min_index].adj; l != NULL; l = l->next) {
+			neighbour_index = tree_search(t, l->word);
+			new_cost = costs[min_index] + l->cost;
+
+			if (new_cost < costs[neighbour_index]) {
+				costs[neighbour_index] = new_cost;
+				prev[neighbour_index] = min_index;
+				/*
+				pq->delete_node(neighbour_index);
+				pq->insert(neighbour_index, new_cost);
+				*/
+			}
+		}
+	}
+
+	pq->print();
+	for (i = 0; i < g->size; i++)
+		printf("cost de la %s la %s: %g\n", start, g->nodes[i].word, costs[i]);
 }
