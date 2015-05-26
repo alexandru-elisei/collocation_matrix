@@ -68,7 +68,7 @@ int tree_search(struct tnode *t, char *w)
 {
 	int equal;
 
-	if (t == NULL)
+	if (t == NULL || w == NULL)
 		return NODE_NOT_FOUND;
 
 	while (FOREVER) {

@@ -16,6 +16,7 @@
 #define SEP		("\n- ")
 #define NODE_NOT_FOUND	(-1)
 /* The cost between two words when there's no path between them */
+#undef INF
 #define INF		(100000)	
 #define COST_UNKNOWN	(-1)
 #define NOT_VISITED	(-1)
