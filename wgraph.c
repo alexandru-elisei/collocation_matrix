@@ -5,6 +5,14 @@
 /* Memory allocation increment */
 #define MEM_INC		(100)
 
+#define RESET_VISITED(v, step, nodes)			\
+	do {						\
+		int i;					\
+		for (i = 0; i < (nodes); i++)		\
+			v[(step)][(i)] = NOT_VISITED;	\
+	} while (0)					\
+			
+
 /* 
  * Updates neighbours of node index by adding them to the priority queue if a
  * new path if found that costs less than the previous known path
@@ -315,12 +323,18 @@ static void transpose_graph(struct wgraph *orig, struct wgraph **trans,
 	*trans = wgraph_create();
 	*trans_tree = tree_create();
 
-	for (i = 0; i < orig->size; i++)
+	for (i = 0; i < orig->size; i++) {
+		/* Adding current node */
+		index = tree_add(trans_tree, orig->nodes[i].word, (*trans)->size);
+		wgraph_add(*trans, orig->nodes[i].word, NULL, index, COST_UNKNOWN);	
+
+		/* And it's neighbours */
 		for (l = orig->nodes[i].adj; l != NULL; l = l->next) {
 			index = tree_add(trans_tree, l->word, (*trans)->size);
 			wgraph_add(*trans, l->word, orig->nodes[i].word,
 					index, l->cost);
 		}
+	}
 }
 
 /* 
@@ -328,32 +342,95 @@ static void transpose_graph(struct wgraph *orig, struct wgraph **trans,
  * Returns a pointer to an array of words that are part of the path
  */
 char **wgraph_fixed_path(struct wgraph *g, struct tnode *t,
-	       	int length, char *end)
+	       	int length, char *end, int *num_of_paths)
 {
 	struct wgraph *trans_graph;
 	struct tnode *trans_tree;
+	struct lnode *nghb;
 
 	int *path;		/* current path as indices in the graph */
-	int path_mem;
-	int *visited;		/* visited nodes at current step */
-	int visited_mem;
-	int len;
-	int num_of_paths;
+	int **visited;		/* visited nodes at current step */
+	int nghb_index;
+	int step;
+	float *costs, cost;
+	int *min_cost_path;
+	float min_cost;
+	int i,j;
 
 	/* Using the transposed graph to find the path */
 	transpose_graph(g, &trans_graph, &trans_tree);
+	//wgraph_print(trans_graph);
 	num_of_paths = 0;
 
-	path_mem = visited_mem = g->size;
-	path = (int *)malloc(path_mem * sizeof(int));
-	visited = (int *)malloc(visited_mem * sizeof(int));
+	path = (int *)malloc(length * sizeof(int));
+	visited = (int **)malloc(length * sizeof(int *));
+	min_cost_path = (int *)malloc(length * sizeof(int));
+	costs = (float *)malloc(length * sizeof(float));
 
-	for (i = 0; i < g->size; i++)
-		visited[i] = NOT_VISITED;
+	for (i = 0; i < length; i++) {
+		visited[i] = (int *)malloc(g->size * sizeof(int));
+		for (j = 0; j < g->size; j++)
+			visited[i][j] = NOT_VISITED;
+		costs[i] = 0;
+	}
 
-	path[0] = tree_search(g, end);
-	
+	path[0] = tree_search(trans_tree, end);
+	step = 0;
+	cost = 0;
+	min_cost = INF;
+	/* While I have not yet exhausted all the neighbours */
+	while (step >= 0) {	
 
+		nghb = trans_graph->nodes[path[step]].adj;
+		for (; nghb != NULL; nghb = nghb->next) {
+			nghb_index = tree_search(trans_tree, nghb->word);
+			if (visited[step][nghb_index] == NOT_VISITED) {
+					costs[step] = nghb->cost;
+					break;
+			}
+		}
 
+		/* Found no unvisited neighbour at current step, backtracking */
+		if (nghb == NULL) {
+			for (i = 0; i < g->size; i++)
+				visited[step][i] = NOT_VISITED;
+			step--;
+			if (step >= 0)
+				cost -= costs[step];
+			continue;
+		}
+
+		cost += costs[step];
+		visited[step++][nghb_index] = VISITED;
+		path[step] = nghb_index;
+		if (step == length - 1) {
+
+			/*
+			for (i = 0; i < length; i++)
+				printf("%s ", trans_graph->nodes[path[i]].word);
+			printf("\n");
+			*/
+
+			if (cost < min_cost) {
+				for (i = 0; i < length; i++) {
+					min_cost_path[i] = path[i];
+				}
+				min_cost = cost;
+			}
+			for (i = 0; i < g->size; i++)
+				visited[step][i] = NOT_VISITED;
+			step--;
+			cost -= costs[step];
+		}
+	}
+
+	printf("\n\n");
+
+	FILE *out;
+	out = fopen("outc", "a+");
+	for (i = length-1; i >= 0; i--)
+		fprintf(out, "%s ", trans_graph->nodes[min_cost_path[i]].word);
+	fprintf(out, "\n");
+	fclose(out);
 
 }

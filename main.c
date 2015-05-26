@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 	int *fixed_lengths;	/* length for the fixed length path */
 	int fixed_no;		/* number of words in the fixed_words array */
 	unsigned int total_words;
+	int num_of_paths;
 
 	char **min_path;
 	int min_path_len;
@@ -65,65 +66,15 @@ int main(int argc, char **argv)
 				&min_words, &min_no,
 				&fixed_words, &fixed_lengths, &fixed_no));
 
-	/*
-	printf("\ncost_words:\n");
-	for (i = 0; i < cost_no * 2; i++)
-		printf("|%s|\n", cost_words[i]);
-
-	printf("\nmin_words:\n");
-	for (i = 0; i < min_no * 2; i++)
-		printf("|%s|\n", min_words[i]);
-
-	printf("\nfixed_words:\n");
-	for (i = 0; i < fixed_no; i++)
-		printf("%d - |%s|\n", fixed_lengths[i], fixed_words[i]);
-
-	*/
-
 	search_tree = tree_create();
 	word_graph = wgraph_create();
 
 	parse_text(text, &search_tree, &total_words, word_graph);
-
-	/*
-	printf("\ntree:\n");
-	tree_print(search_tree);
-	*/
-
 	wgraph_calculate_costs(word_graph, search_tree, total_words);
 
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
 			search_tree, cost_words[2*i], cost_words[2*i+1]));
-
-	/*
-	printf("testing heap:\n");
-	pri_queue = pqueue_create(word_graph->size);
-	pri_queue->insert(0, 23.93);
-	pri_queue->insert(1, 2.33);
-	pri_queue->insert(2, 1.33);
-	pri_queue->insert(3, 5.00);
-	pri_queue->insert(4, 3.00);
-	pri_queue->insert(5, 4.00);
-	pri_queue->print();
-
-	puts("");
-
-	pri_queue->update_node(1, 4.45);
-	pri_queue->print();
-
-	printf("%d\n", pri_queue->extract_min());
-	printf("%d\n", pri_queue->extract_min());
-	printf("%d\n", pri_queue->extract_min());
-	printf("%d\n", pri_queue->extract_min());
-
-	pri_queue = pqueue_destroy(pri_queue);
-	*/
-
-	/*
-	printf("\ngraph:\n");
-	wgraph_print(word_graph);
-	*/
 
 	for (i = 0; i < min_no; i++) {
 		min_path = wgraph_min_path(word_graph, search_tree, 
@@ -141,11 +92,18 @@ int main(int argc, char **argv)
 		fprintf(out, "\n");
 	}
 
+	/*
 	printf("\ngraful normal:\n");
 	wgraph_print(word_graph);
+	*/
 
-	printf("\ngraful inversat:\n");
-	wgraph_fixed_path(word_graph, search_tree, 5, "test");
+	/*
+	printf("\nfixed length paths:\n");
+	printf("fixed_no = %d\n", fixed_no);
+	*/
+	for (i = 0; i < fixed_no; i++)
+		wgraph_fixed_path(word_graph, search_tree, 
+			fixed_lengths[i], fixed_words[i], &num_of_paths);
 
 	//printf("destroying search_tree\n");
 	search_tree = tree_destroy(search_tree);
