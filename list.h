@@ -10,7 +10,6 @@
 struct lnode {
 	char *word;
 	unsigned int count;	/* how many times the node appears */
-	uint8_t visited;
 	float cost;
 	struct lnode *next;
 };
@@ -22,7 +21,7 @@ struct lnode *list_create();
 struct lnode *list_destroy(struct lnode *l);
 
 /* Adds a word to the list, making sure there are no duplicates */
-enum word_result list_add(struct lnode **l, char *w);
+enum word_result list_add(struct lnode **l, char *w, float cost);
 
 /* Gets the cost for a word */
 float list_get_cost(struct lnode *l, char *w);

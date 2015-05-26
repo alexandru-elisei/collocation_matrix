@@ -12,7 +12,6 @@
 
 struct vertex {
 	char *word;
-	uint8_t	visited;
 	unsigned int count;	/* how many times the word appears */
 	struct lnode *adj;	/* adjancency list */
 };
@@ -31,7 +30,8 @@ struct wgraph *wgraph_create();
 struct wgraph *wgraph_destroy(struct wgraph *g);
 
 /* Adds a vertex to the graph */
-void wgraph_add(struct wgraph *g, char *prev, char *current, int position);
+void wgraph_add(struct wgraph *g, char *prev, char *current, 
+		int position, float cost);
 
 /* Calculates the costs between vertices */
 enum word_result wgraph_calculate_costs(struct wgraph *g,
@@ -49,11 +49,11 @@ float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
 enum word_result wgraph_empty(struct wgraph *g);
 
 /* 
- * Finds the minimum cost path between two words.
+ * Finds the minimum cost path between two words by using Dijkstra's algorithm.
  * Returns a pointer to an array of words that are part of the path
  */
 char **wgraph_min_path(struct wgraph *g, struct tnode *t,
-	       	char *start, char *end);
+	       	char *start, char *end, int *len);
 
 /* 
  * Finds the fixed cost path between two words.

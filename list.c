@@ -22,7 +22,7 @@ struct lnode *list_destroy(struct lnode *l)
 }
 
 /* Adds a word to the list, making sure there are no duplicates */
-enum word_result list_add(struct lnode **l, char *w)
+enum word_result list_add(struct lnode **l, char *w, float cost)
 {
 	struct lnode *tmp;
 	struct lnode *aux;
@@ -34,7 +34,7 @@ enum word_result list_add(struct lnode **l, char *w)
 		*l = (struct lnode *) malloc(sizeof(struct lnode));
 		(*l)->word = strdup(w);
 		(*l)->count = 1;
-		(*l)->cost = 0;
+		(*l)->cost = cost;
 		(*l)->next = NULL;
 	} else {
 		for (tmp = *l; tmp->next != NULL; tmp = tmp->next)
@@ -45,7 +45,7 @@ enum word_result list_add(struct lnode **l, char *w)
 			aux = (struct lnode *) malloc(sizeof(struct lnode));	
 			aux->word = strdup(w);
 			aux->count = 1;
-			aux->cost = 0;
+			aux->cost = cost;
 			aux->next = tmp->next;
 			tmp->next = aux;
 		} else {

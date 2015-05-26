@@ -36,7 +36,6 @@ int main(int argc, char **argv)
 
 	struct tnode *search_tree;
 	struct wgraph *word_graph = NULL;
-	struct pqueue *pri_queue;
 	
 	char **cost_words;	/* words needed for printing the cost */
 	int cost_no;		/* number of words in the cost_words array */
@@ -47,7 +46,11 @@ int main(int argc, char **argv)
 	int fixed_no;		/* number of words in the fixed_words array */
 	unsigned int total_words;
 
+	char **min_path;
+	int min_path_len;
+
 	int i;
+	int j;
 
 	if (argc < 3)
 		CHKRES(WORD_ERROR_INVALID_ARGUMENTS);
@@ -89,11 +92,6 @@ int main(int argc, char **argv)
 
 	wgraph_calculate_costs(word_graph, search_tree, total_words);
 
-	/*
-	printf("\nafter odds:\n");
-	wgraph_print(word_graph);
-	*/
-
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
 			search_tree, cost_words[2*i], cost_words[2*i+1]));
@@ -127,11 +125,27 @@ int main(int argc, char **argv)
 	wgraph_print(word_graph);
 	*/
 
-	for (i = 0; i < min_no; i++)
-		wgraph_min_path(word_graph, search_tree, min_words[2*i], min_words[2*i+1]);
-	//wgraph_min_path(word_graph, search_tree, "fisier", "scurte");
-	//wgraph_min_path(word_graph, search_tree, "de", "fisier");
+	for (i = 0; i < min_no; i++) {
+		min_path = wgraph_min_path(word_graph, search_tree, 
+				min_words[2*i], min_words[2*i+1], &min_path_len);
 
+		if (min_path == NULL) {
+			fprintf(stderr, "No path found between %s and %s\n",
+				min_words[2*i], min_words[2*i+1]);
+			continue;
+		}
+
+		fprintf(out, "%s", min_path[0]);
+		for (j = 1; j < min_path_len; j++)
+			fprintf(out, " %s", min_path[j]);
+		fprintf(out, "\n");
+	}
+
+	printf("\ngraful normal:\n");
+	wgraph_print(word_graph);
+
+	printf("\ngraful inversat:\n");
+	wgraph_fixed_path(word_graph, search_tree, 5, "test");
 
 	//printf("destroying search_tree\n");
 	search_tree = tree_destroy(search_tree);
@@ -256,8 +270,9 @@ enum word_result parse_text(FILE *text, struct tnode **t,
 				if (previous_word != NULL) {
 					graph_index = tree_add(t, previous_word, 
 							graph->size);
-					wgraph_add(graph, previous_word,
-						word_shared_address, graph_index);
+					wgraph_add(graph, previous_word, 
+						word_shared_address, 
+						graph_index, COST_UNKNOWN);
 				}
 
 				previous_word = word_shared_address;
@@ -271,7 +286,7 @@ enum word_result parse_text(FILE *text, struct tnode **t,
 
 	/* Adding the last word */
 	graph_index = tree_add(t, word_shared_address, graph->size);
-	wgraph_add(graph, word_shared_address, NULL, graph_index);
+	wgraph_add(graph, word_shared_address, NULL, graph_index, COST_UNKNOWN);
 	graph->last_word_index = graph_index;
 
 	return WORD_SUCCESS;
