@@ -59,7 +59,7 @@ char **wgraph_min_path(struct wgraph *g, struct tnode *t,
  * Returns a pointer to an array of words that are part of the path
  */
 char **wgraph_fixed_path(struct wgraph *g, struct tnode *t,
-	       	int length, char *end, int *num_of_paths);
+	       	int length, char *end, int *min_paths);
 
 /* Prints the graph */
 void wgraph_print(struct wgraph *g);
