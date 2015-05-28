@@ -71,6 +71,8 @@ int main(int argc, char **argv)
 	parse_text(text, &search_tree, word_graph);
 	wgraph_calculate_costs(word_graph);
 
+	wgraph_print(word_graph);
+
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
 			search_tree, cost_words[2*i], cost_words[2*i+1]));

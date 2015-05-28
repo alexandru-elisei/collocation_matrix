@@ -17,15 +17,15 @@
  * Updates neighbours of node index by adding them to the priority queue if a
  * new path if found that costs less than the previous known path
  */
-static inline void update_neighbours(struct wgraph *g, struct tnode *t,
-		struct pqueue *pq, int index, float *costs, int *prev)
+static inline void update_neighbours(struct wgraph *g, struct pqueue *pq, 
+		int index, float *costs, int *prev)
 {
 	struct lnode *l;
 	int neighbour_index;
 	float new_cost;
 
 	for (l = g->nodes[index].adj; l != NULL; l = l->next) {
-		neighbour_index = tree_search(t, l->word);
+		neighbour_index = l->graph_index;
 		new_cost = costs[index] + l->cost;
 
 		if (new_cost < costs[neighbour_index]) {
@@ -115,7 +115,6 @@ struct wgraph *wgraph_destroy(struct wgraph *g)
 /* Adds a vertex to the graph */
 void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost)
 {
-	g->total_words++;
 	/* Adding a new word */
 	if (index == g->size) {
 		if (g->size == g->mem_alloc) {
@@ -130,10 +129,12 @@ void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost)
 		if (*prev != NODE_NOT_FOUND)
 			list_add(&g->nodes[*prev].adj, w, index, cost);
 		g->size++;
+	/* Updating a previously read word */
 	} else {
 		g->nodes[index].count++;
 		list_add(&g->nodes[*prev].adj, w, index, cost);
 	}
+	g->total_words++;
 }
 
 /* Prints the graph */
