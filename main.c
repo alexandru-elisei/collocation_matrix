@@ -26,7 +26,7 @@ enum word_result get_input(FILE *in, FILE **text,
 
 /* Parses the text file, building the binary word search tree and the graph */
 enum word_result parse_text(FILE *text, struct tnode **t, 
-		unsigned int *total_words, struct wgraph *graph);
+		struct wgraph *graph);
 
 int main(int argc, char **argv)
 {
@@ -44,7 +44,6 @@ int main(int argc, char **argv)
 	char **fixed_words;	/* words for the fixed length path */
 	int *fixed_lengths;	/* length for the fixed length path */
 	int fixed_no;		/* number of words in the fixed_words array */
-	unsigned int total_words;
 	int num_of_paths;
 
 	char **min_path;
@@ -69,8 +68,8 @@ int main(int argc, char **argv)
 	search_tree = tree_create();
 	word_graph = wgraph_create();
 
-	parse_text(text, &search_tree, &total_words, word_graph);
-	wgraph_calculate_costs(word_graph, search_tree, total_words);
+	parse_text(text, &search_tree, word_graph);
+	wgraph_calculate_costs(word_graph);
 
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
@@ -187,7 +186,7 @@ enum word_result get_input(FILE *in, FILE **text,
 
 /* Parses the text file, building the binary word search tree and the graph */
 enum word_result parse_text(FILE *text, struct tnode **t, 
-		unsigned int *total_words, struct wgraph *graph)
+		struct wgraph *graph)
 {
 	char buffer[LINE_LEN];
 	char word[WORD_LEN];
@@ -198,7 +197,6 @@ enum word_result parse_text(FILE *text, struct tnode **t,
 	int graph_index;
 	int i;
 
-	*total_words = 0;
 	word_address = NULL;
 	prev_index = graph_index = NODE_NOT_FOUND;
 	while (fgets(buffer, LINE_LEN, text) != NULL) {
@@ -232,7 +230,6 @@ enum word_result parse_text(FILE *text, struct tnode **t,
 
 				word[0] = '\0';
 				word_index = 0;
-				(*total_words)++;
 			} 
 		}
 	}
