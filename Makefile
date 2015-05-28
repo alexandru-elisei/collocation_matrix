@@ -17,7 +17,8 @@ SOURCES = main.c			\
 
 OBJS = $(SOURCES:%.c=%.o)
 
-.PHONY: build
+.PHONY: build clean
+
 build: $(PROG)
 
 $(PROG): $(OBJS) $(HEADERS)
@@ -26,6 +27,5 @@ $(PROG): $(OBJS) $(HEADERS)
 %.o: %.c
 	$(CC) -c $^ -o $@ $(CFLAGS) -O2
 
-.PHONY: clean
 clean:
 	rm -rf a.out $(PROG) $(OBJS)
