@@ -12,13 +12,14 @@
 
 struct vertex {
 	char *word;
-	unsigned int count;	/* how many times the word appears */
-	struct lnode *adj;	/* adjancency list */
+	unsigned int count;		/* number of occurences */
+	struct lnode *adj;		/* adjancency list */
 };
 
 struct wgraph {
 	struct vertex *nodes;
-	int last_word_index;	/* there's no word after the last word */
+	int last_word_index;		/* no word after the last word */
+	unsigned int total_words;
 	unsigned int size;
 	unsigned int mem_alloc;
 };
@@ -33,8 +34,7 @@ struct wgraph *wgraph_destroy(struct wgraph *g);
 void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost);
 
 /* Calculates the costs between vertices */
-enum word_result wgraph_calculate_costs(struct wgraph *g,
-		struct tnode *t, unsigned int total_words);
+enum word_result wgraph_calculate_costs(struct wgraph *g);
 
 /* Returns the cost between two words, where the starting node is a word */
 float wgraph_cost_by_name(struct wgraph *g, struct tnode *t,

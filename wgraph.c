@@ -88,6 +88,7 @@ struct wgraph *wgraph_create()
 
 	ret = (struct wgraph *)malloc(sizeof(struct wgraph));
 	ret->size = 0;
+	ret->total_words = 0;
 	ret->mem_alloc = MEM_INC;
 	ret->nodes = (struct vertex *)malloc(
 			ret->mem_alloc * sizeof(struct vertex));
@@ -114,6 +115,7 @@ struct wgraph *wgraph_destroy(struct wgraph *g)
 /* Adds a vertex to the graph */
 void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost)
 {
+	g->total_words++;
 	/* Adding a new word */
 	if (index == g->size) {
 		if (g->size == g->mem_alloc) {
@@ -126,11 +128,11 @@ void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost)
 		g->nodes[index].count = 1;
 		g->nodes[index].adj = list_create();
 		if (*prev != NODE_NOT_FOUND)
-			list_add(&g->nodes[*prev].adj, w, cost);
+			list_add(&g->nodes[*prev].adj, w, index, cost);
 		g->size++;
 	} else {
 		g->nodes[index].count++;
-		list_add(&g->nodes[*prev].adj, w, cost);
+		list_add(&g->nodes[*prev].adj, w, index, cost);
 	}
 }
 
@@ -160,15 +162,13 @@ enum word_result wgraph_empty(struct wgraph *g)
 }
 
 /* Calculates the costs between vertices */
-enum word_result wgraph_calculate_costs(struct wgraph *g,
-		struct tnode *t, unsigned int total_words)
+enum word_result wgraph_calculate_costs(struct wgraph *g)
 {
 	struct lnode *l;
 	enum word_result r;
 
 	int i;
 	int o11, o12, o21, o22;
-	int tmp_index;
 	float max_odds; 
 
 	if ((r = wgraph_empty(g)) != WORD_GRAPH_NOT_EMPTY)
@@ -198,10 +198,9 @@ enum word_result wgraph_calculate_costs(struct wgraph *g,
 			 * How many times l appeared minus the times it appeared
 			 * after node i
 			 */
-			tmp_index = tree_search(t, l->word);
-			o21 = g->nodes[tmp_index].count - o11;
+			o21 = g->nodes[l->graph_index].count - o11;
 
-			o22 = (total_words - 1) - o11 - o12 - o21;
+			o22 = (g->total_words - 1) - o11 - o12 - o21;
 
 			l->cost = log(o11 + 0.5) + log(o22 + 0.5) -
 				log(o12 + 0.5) - log(o21 + 0.5);

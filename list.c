@@ -22,7 +22,7 @@ struct lnode *list_destroy(struct lnode *l)
 }
 
 /* Adds a word to the list, making sure there are no duplicates */
-enum word_result list_add(struct lnode **l, char *w, float cost)
+enum word_result list_add(struct lnode **l, char *w, int index, float cost)
 {
 	struct lnode *tmp;
 	struct lnode *aux;
@@ -35,6 +35,7 @@ enum word_result list_add(struct lnode **l, char *w, float cost)
 		(*l)->word = strdup(w);
 		(*l)->count = 1;
 		(*l)->cost = cost;
+		(*l)->graph_index = index;
 		(*l)->next = NULL;
 	} else {
 		for (tmp = *l; tmp->next != NULL; tmp = tmp->next)
@@ -46,6 +47,7 @@ enum word_result list_add(struct lnode **l, char *w, float cost)
 			aux->word = strdup(w);
 			aux->count = 1;
 			aux->cost = cost;
+			aux->graph_index = index;
 			aux->next = tmp->next;
 			tmp->next = aux;
 		} else {
@@ -60,7 +62,8 @@ enum word_result list_add(struct lnode **l, char *w, float cost)
 void list_print(struct lnode *l)
 {
 	for (; l != NULL; l = l->next)
-		printf(" %-15s - %3d (cost %g)\n", l->word, l->count, l->cost);
+		printf(" %-15s - %3d (cost %g)(index %4d)\n", 
+			l->word, l->count, l->cost, l->graph_index);
 }
 
 /* Gets the cost for a word */
