@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 		fixed_path = wgraph_fixed_path(word_graph, search_tree, 
 			fixed_lengths[i], fixed_words[i], &fixed_paths);
 		if (fixed_path == NULL) {
-			fprintf(stderr, "No path of length %d to %s found\n",
+			fprintf(stdout, "No path of length %d to %s found\n",
 					fixed_lengths[i], fixed_words[i]);
 			continue;
 		}
