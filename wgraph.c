@@ -112,25 +112,25 @@ struct wgraph *wgraph_destroy(struct wgraph *g)
 }
 
 /* Adds a vertex to the graph */
-void wgraph_add(struct wgraph *g, char *prev, char *current, 
-		int position, float cost)
+void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost)
 {
 	/* Adding a new word */
-	if (position == g->size) {
+	if (index == g->size) {
 		if (g->size == g->mem_alloc) {
 			g->mem_alloc += MEM_INC;
 			g->nodes = (struct vertex *)realloc(g->nodes,
 					g->mem_alloc * sizeof(struct vertex));
 		}
 
-		g->nodes[position].word = prev;
-		g->nodes[position].count = 1;
-		g->nodes[position].adj = list_create();
-		list_add(&g->nodes[position].adj, current, cost);
+		g->nodes[index].word = w;
+		g->nodes[index].count = 1;
+		g->nodes[index].adj = list_create();
+		if (*prev != NODE_NOT_FOUND)
+			list_add(&g->nodes[*prev].adj, w, cost);
 		g->size++;
 	} else {
-		g->nodes[position].count++;
-		list_add(&g->nodes[position].adj, current, cost);
+		g->nodes[index].count++;
+		list_add(&g->nodes[*prev].adj, w, cost);
 	}
 }
 
@@ -245,6 +245,7 @@ void print_path(struct wgraph *g, int *p, int start, int end)
 	printf("%s ", g->nodes[p[end]].word);
 }
 
+#if 0
 /* 
  * Finds the minimum cost path between two words by using Dijkstra's algorithm.
  * Returns a pointer to an array of words that are part of the path
@@ -434,3 +435,4 @@ char **wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 	fclose(out);
 
 }
+#endif

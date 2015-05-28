@@ -30,8 +30,7 @@ struct wgraph *wgraph_create();
 struct wgraph *wgraph_destroy(struct wgraph *g);
 
 /* Adds a vertex to the graph */
-void wgraph_add(struct wgraph *g, char *prev, char *current, 
-		int position, float cost);
+void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost);
 
 /* Calculates the costs between vertices */
 enum word_result wgraph_calculate_costs(struct wgraph *g,
