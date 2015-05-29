@@ -5,14 +5,6 @@
 /* Memory allocation increment */
 #define MEM_INC		(100)
 
-#define RESET_VISITED(v, step, nodes)			\
-	do {						\
-		int i;					\
-		for (i = 0; i < (nodes); i++)		\
-			v[(step)][(i)] = NOT_VISITED;	\
-	} while (0)					\
-			
-
 /* 
  * Updates neighbours of node index by adding them to the priority queue if a
  * new path if found that costs less than the previous known path
@@ -68,7 +60,7 @@ struct wgraph *wgraph_destroy(struct wgraph *g)
 
 	if (g->size != 0)
 		for (i = 0; i < g->size; i++) {
-			list_destroy(g->nodes[i].adj);
+			g->nodes[i].adj = list_destroy(g->nodes[i].adj);
 			free(g->nodes[i].word);
 		}
 	free(g->nodes);
@@ -263,11 +255,16 @@ enum word_result wgraph_min_path(struct wgraph *g, struct tnode *t,
 		/* Updating the costs by using the new found min path */
 		update_neighbours(g, pq, min_index, costs, prev);
 	}
+	pq = pqueue_destroy(pq);
 
 	/* Found path */
 	 if (min_index == end_index) {
 		print_minpath_to_file(g, prev, start_index, end_index, out);
 		fprintf(out, "%s\n", g->nodes[end_index].word);
+
+		free(prev);
+		free(costs);
+
 		return WORD_SUCCESS;
 	 } else {
 		return WORD_NO_MIN_PATH_FOUND;
@@ -322,15 +319,10 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 
 	float *costs;		/* costs added at each step */
        	float path_cost;	/* current path cost */
-	float *path_costs;	/* the costs for each discovered path */
-	int **discovered_paths;	/* array of all possible paths */
-	/* Allocated memory for path_costs and discovered_paths */
-	int path_mem;		
-	int paths;		/* number of paths found */
-
-	int *min_cost_path;	/* indices in the graph for the min path */
-	float min_cost;	
-	int min_paths;
+	int **discovered_paths;	/* array of all same min cost paths */
+	int path_mem;		/* allocated memory for discovered_paths */
+	float min_cost;		/* current minimum cost */
+	int min_paths;		/* number of same minimum cost paths */
 
 	int i,j, nghb_num;
 
@@ -341,7 +333,6 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 	transpose_graph(g, &trans_graph, &trans_tree);
 
 	path = (int *)malloc(length * sizeof(int));
-	min_cost_path = (int *)malloc(length * sizeof(int));
 	costs = (float *)malloc(length * sizeof(float));
 
 	visited = (int *)malloc(length * sizeof(int *));
@@ -349,16 +340,15 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 		visited[i] = 0;
 
 	path_mem = MEM_INC;
-	path_costs = (float *)malloc(path_mem * sizeof(float));
 	discovered_paths = (int **)malloc(path_mem * sizeof(int *));
 
 	for (i = 0; i < path_mem; i++)
 		discovered_paths[i] = (int *)malloc(length * sizeof(int));
 
 	path[0] = tree_search(trans_tree, end);
-	paths = 0;
 	step = 0;
 	path_cost = 0;
+	min_paths = 0;
 	min_cost = INF;
 
 	/* While I have not yet exhausted all the neighbours */
@@ -395,31 +385,34 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 
 		/* Found path */
 		if (step == length - 1) {
-			if (path_cost <= min_cost + PRECISION) {
-				for (i = 0; i < length; i++) {
-					min_cost_path[i] = path[i];
-				}
-				min_cost = path_cost;
-			}
+			/* Found a new path with the same cost */
+			if (path_cost - min_cost > -PRECISION  &&
+					path_cost - min_cost < PRECISION) {
 
-			/* Reallocating memory */
-			if (paths == path_mem) {
-				path_mem += MEM_INC;
-				path_costs = (float *)realloc(path_costs,
-						path_mem * sizeof(float));
-				discovered_paths = (int **)realloc(
+				if (min_paths == path_mem) {
+					path_mem += MEM_INC;
+					discovered_paths = (int **)realloc(
 						discovered_paths,
 						path_mem * sizeof(int *));
-				for (i = path_mem - MEM_INC; i < path_mem; i++)
-					discovered_paths[i] = (int *)malloc(
-							length * sizeof(int));
-			}
+					for (i = min_paths; i < path_mem; i++)
+						discovered_paths[i] = (int *)
+							malloc(length * sizeof(int));
+				}
 
-			/* Copying path costs and nodes */
-			path_costs[paths] = path_cost;
-			for (i = 0; i < length; i++)
-				discovered_paths[paths][i] = path[i];
-			paths++;
+				/* Saving the path */
+				for (i = 0; i < length; i++)
+					discovered_paths[min_paths][i] = path[i];
+				min_paths++;
+				min_cost = path_cost;
+
+			/* Found new min_path */
+			} else if (path_cost < min_cost + PRECISION) {
+				min_paths = 0;
+				for (i = 0; i < length; i++)
+					discovered_paths[min_paths][i] = path[i];
+				min_paths++;
+				min_cost = path_cost;
+			}
 
 			visited[step] = 0;
 			step--;
@@ -428,23 +421,35 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 	}
 
 	/* Calculating number of paths with the same minimum cost */
-	min_paths = 0;
-	for (i = 0; i < paths; i++)
-		if (path_costs[i] - min_cost > -PRECISION &&
-		  path_costs[i] - min_cost < PRECISION ) {
-			min_paths++;
-		}
 	fprintf(out, "%d\n", min_paths);
 
 	/* Printing the paths with same minimum cost */
-	for (i = 0; i < paths; i++)
-		if (path_costs[i] - min_cost > -PRECISION &&
-		  path_costs[i] - min_cost < PRECISION ) {
-			fprintf(out, "%s", trans_graph->nodes[discovered_paths[i][length-1]].word);
-			for (j = length-2; j >= 0; j--)
-				fprintf(out, " %s", trans_graph->nodes[discovered_paths[i][j]].word);
-			fprintf(out, "\n");
+	for (i = 0; i < min_paths; i++) {
+		fprintf(out, "%s", trans_graph->nodes[discovered_paths[i][length-1]].word);
+		for (j = length-2; j >= 0; j--)
+			fprintf(out, " %s", trans_graph->nodes[discovered_paths[i][j]].word);
+		fprintf(out, "\n");
+		free(discovered_paths[i]);
+	}
+	free(discovered_paths);
+
+	trans_tree = tree_destroy(trans_tree);
+
+	/* 
+	 * Freeing transposed graph, I don't want to free the words too so I am
+	 * not calling the destroy method
+	 */
+	struct lnode *tmp, *l;
+	for (i = 0; i < trans_graph->size; i++) {
+		l = trans_graph->nodes[i].adj;
+		while (l != NULL) {
+			tmp = l;
+			l = l->next;
+			free(tmp);
 		}
+	}
+	free(trans_graph->nodes);
+	free(trans_graph);
 
 	/* No path of specified length found */
 	if (min_cost == INF)
