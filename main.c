@@ -36,6 +36,7 @@ int main(int argc, char **argv)
 
 	struct tnode *search_tree;
 	struct wgraph *word_graph = NULL;
+	enum word_result r;
 	
 	char **cost_words;	/* words needed for printing the cost */
 	int cost_no;		/* number of words in the cost_words array */
@@ -73,10 +74,12 @@ int main(int argc, char **argv)
 	parse_text(text, &search_tree, word_graph);
 	wgraph_calculate_costs(word_graph);
 
+	/* Costs between words */
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
 			search_tree, cost_words[2*i], cost_words[2*i+1]));
 
+	/* Minimum length paths */
 	for (i = 0; i < min_no; i++) {
 		min_path = wgraph_min_path(word_graph, search_tree, 
 				min_words[2*i], min_words[2*i+1], &min_path_len);
@@ -93,28 +96,15 @@ int main(int argc, char **argv)
 		fprintf(out, "\n");
 	}
 
-	/*
-	printf("\ngraful normal:\n");
-	wgraph_print(word_graph);
-	*/
-
-	/*
-	printf("\nfixed length paths:\n");
-	printf("fixed_no = %d\n", fixed_no);
-	*/
+	/* Fixed length paths */
 	for (i = 0; i < fixed_no; i++) {
-		fixed_path = wgraph_fixed_path(word_graph, search_tree, 
-			fixed_lengths[i], fixed_words[i], &fixed_paths);
-		if (fixed_path == NULL) {
+		r = wgraph_fixed_path(word_graph, search_tree, 
+			fixed_lengths[i], fixed_words[i], out);
+		if (r != WORD_SUCCESS) {
 			fprintf(stdout, "No path of length %d to %s found\n",
 					fixed_lengths[i], fixed_words[i]);
 			continue;
 		}
-		fprintf(out, "%d\n", fixed_paths);
-		fprintf(out, "%s", fixed_path[0]);
-		for (j = 1; j < fixed_lengths[i]; j++)
-			fprintf(out, " %s", fixed_path[j]);
-		fprintf(out, "\n");
 	}
 
 	//printf("destroying search_tree\n");
