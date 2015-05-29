@@ -80,17 +80,17 @@ void wgraph_add(struct wgraph *g, char *w, int index, int *prev, float cost)
 					g->mem_alloc * sizeof(struct vertex));
 		}
 
-		g->nodes[index].word = w;
+		g->nodes[index].word = strdup(w);
 		g->nodes[index].count = 1;
 		g->nodes[index].adj = list_create();
 		if (*prev != NODE_NOT_FOUND)
-			list_add(&g->nodes[*prev].adj, w, index, cost);
+			list_add(&g->nodes[*prev].adj, index, cost);
 		g->size++;
 	/* Updating a previously read word */
 	} else {
 		g->nodes[index].count++;
 		if (*prev != NODE_NOT_FOUND)
-			list_add(&g->nodes[*prev].adj, w, index, cost);
+			list_add(&g->nodes[*prev].adj, index, cost);
 	}
 	g->total_words++;
 }
@@ -180,20 +180,31 @@ enum word_result wgraph_calculate_costs(struct wgraph *g)
 float wgraph_cost_by_name(struct wgraph *g, struct tnode *t,
 			char *word, char *neighbour)
 {
-	int index;
+	int tail_index;
+	int head_index;
 
-	index = tree_search(t, word);
-	if (index == NODE_NOT_FOUND)
+	tail_index = tree_search(t, word);
+	if (tail_index == NODE_NOT_FOUND)
 		return INF;
 
-	return list_get_cost(g->nodes[index].adj, neighbour);
+	head_index = tree_search(t, neighbour);
+	if (head_index == NODE_NOT_FOUND)
+		return INF;
+	
+	return list_get_cost(g->nodes[tail_index].adj, head_index);
 }
 
 /* Returns the cost between two words, where the starting node is an index */
 float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
 			int index, char *neighbour)
 {
-	return list_get_cost(g->nodes[index].adj, neighbour);
+	int head_index;
+
+	head_index = tree_search(t, neighbour);
+	if (head_index == NODE_NOT_FOUND)
+		return INF;
+
+	return list_get_cost(g->nodes[index].adj, head_index);
 }
 
 /* 
@@ -291,13 +302,13 @@ static void transpose_graph(struct wgraph *orig, struct wgraph **trans,
 
 		/* And it's neighbours */
 		for (l = orig->nodes[i].adj; l != NULL; l = l->next) {
-			tail_index = tree_add(trans_tree, l->word, (*trans)->size);
-			wgraph_add(*trans, l->word, tail_index, 
+			tail_index = tree_add(trans_tree, 
+					orig->nodes[l->graph_index].word, (*trans)->size);
+			wgraph_add(*trans, orig->nodes[l->graph_index].word, tail_index, 
 					&no_previous, l->cost);
 			/* Adding current node as a neighbour */
 			list_add(&((*trans)->nodes[tail_index].adj),
-					orig->nodes[i].word, head_index,
-					l->cost);
+					head_index, l->cost);
 		}
 	}
 }
@@ -429,8 +440,9 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 		for (j = length-2; j >= 0; j--)
 			fprintf(out, " %s", trans_graph->nodes[discovered_paths[i][j]].word);
 		fprintf(out, "\n");
-		free(discovered_paths[i]);
 	}
+	for (i = 0; i < path_mem; i++)
+		free(discovered_paths[i]);
 	free(discovered_paths);
 
 	trans_tree = tree_destroy(trans_tree);
@@ -439,6 +451,7 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 	 * Freeing transposed graph, I don't want to free the words too so I am
 	 * not calling the destroy method
 	 */
+	/*
 	struct lnode *tmp, *l;
 	for (i = 0; i < trans_graph->size; i++) {
 		l = trans_graph->nodes[i].adj;
@@ -450,6 +463,11 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 	}
 	free(trans_graph->nodes);
 	free(trans_graph);
+	*/
+	trans_graph = wgraph_destroy(trans_graph);
+	free(costs);
+	free(path);
+	free(visited);
 
 	/* No path of specified length found */
 	if (min_cost == INF)

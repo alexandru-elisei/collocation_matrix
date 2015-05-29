@@ -8,7 +8,6 @@
 #include "common.h"
 
 struct lnode {
-	char *word;
 	unsigned int count;	/* how many times the node appears */
 	int graph_index;	/* index in graph, for faster BT searching */
 	float cost;
@@ -22,10 +21,10 @@ struct lnode *list_create();
 struct lnode *list_destroy(struct lnode *l);
 
 /* Adds a word to the list, making sure there are no duplicates */
-enum word_result list_add(struct lnode **l, char *w, int index, float cost);
+enum word_result list_add(struct lnode **l, int index, float cost);
 
 /* Gets the cost for a word */
-float list_get_cost(struct lnode *l, char *w);
+float list_get_cost(struct lnode *l, int index);
 
 /* Prints the list */
 void list_print(struct lnode *l);
