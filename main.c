@@ -18,6 +18,14 @@
 		}						\
 	} while (0)		
 
+#define FREE_WORDS(w, n)					\
+	do {							\
+		int i;						\
+		for (i = 0; i < (n); i++)			\
+			free(w[i]);				\
+		free(w);					\
+	} while (0)						\
+
 /* Reads the input file */
 enum word_result get_input(FILE *in, FILE **text, 
 		char ***cost, int *cost_no,
@@ -67,17 +75,6 @@ int main(int argc, char **argv)
 	parse_text(text, &search_tree, word_graph);
 	wgraph_calculate_costs(word_graph);
 
-	/*
-	wgraph_print(word_graph);
-
-	struct pqueue *pq;
-	pq = pqueue_create(word_graph->size);
-	pq->insert(3, 1.70915);
-	pq->insert(6, 0.70915);
-	pq->insert(4, 3.70915);
-	pq->insert(2, 0.10915);
-	pq->extract_min();
-	*/
 	/* Costs between words */
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
@@ -111,21 +108,9 @@ int main(int argc, char **argv)
 	search_tree = tree_destroy(search_tree);
 	word_graph = wgraph_destroy(word_graph);
 
-	for (i = 0; i < cost_no; i++) {
-		free(cost_words[2*i]);
-		free(cost_words[2*i+1]);
-	}
-	free(cost_words);
-
-	for (i = 0; i < min_no; i++) {
-		free(min_words[2*i]);
-		free(min_words[2*i+1]);
-	}
-	free(min_words);
-
-	for (i = 0; i < fixed_no; i++)
-		free(fixed_words[i]);
-	free(fixed_words);
+	FREE_WORDS(cost_words, 2 * cost_no);
+	FREE_WORDS(min_words, 2 * min_no);
+	FREE_WORDS(fixed_words, fixed_no);
 	free(fixed_lengths);
 
 	fclose(in);
