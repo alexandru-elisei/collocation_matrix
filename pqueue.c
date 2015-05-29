@@ -277,24 +277,14 @@ int extract_min()
 /* Updates the cost for a node */
 void update_node(int graph_index, float new_cost)
 {
-	int i;
-
 	if (h == NULL)
 		return;
-
-	/* 
-	 * Inefficient search for the node - to make an array which maps
-	 * graph_index to heap index
-	 */
-	for (i = 0; i < h->size; i++)
-		if (h->nodes[i].index == graph_index)
-			break;
 
 	/* Node not found */
 	if (map_graph_to_heap[graph_index] == NODE_NOT_FOUND) {
 		insert(graph_index, new_cost);
 	} else {
-		delete_node(i);
+		delete_node(map_graph_to_heap[graph_index]);
 		insert(graph_index, new_cost);
 	}
 }
