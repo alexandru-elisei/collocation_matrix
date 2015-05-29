@@ -267,7 +267,7 @@ char **wgraph_min_path(struct wgraph *g, struct tnode *t,
 	int min_index = -1;
 	int i;
 
-	if (wgraph_empty (g) != WORD_GRAPH_NOT_EMPTY)
+	if (wgraph_empty(g) != WORD_GRAPH_NOT_EMPTY)
 		return NULL;
 
 	start_index = tree_search(t, start);
@@ -443,7 +443,7 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 				min_cost = path_cost;
 			}
 
-			/* Reallocating, if necessary */
+			/* Reallocating memory */
 			if (paths == path_mem) {
 				path_mem += MEM_INC;
 				path_costs = (float *)realloc(path_costs,
@@ -475,8 +475,8 @@ enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
 		  path_costs[i] - min_cost < PRECISION ) {
 			min_paths++;
 		}
-
 	fprintf(out, "%d\n", min_paths);
+
 	/* Printing the paths with same minimum cost */
 	for (i = 0; i < paths; i++)
 		if (path_costs[i] - min_cost > -PRECISION &&
