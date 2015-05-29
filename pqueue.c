@@ -55,9 +55,22 @@ static inline void delete_node(int index)
 	map_graph_to_heap[h->nodes[index].index] = NODE_NOT_FOUND;
 
 	h->nodes[index] = h->nodes[h->size - 1];
+	map_graph_to_heap[h->nodes[index].index] = index;
 	h->size--;
 	sift_down(index);
 }
+
+#ifdef DEBUG
+static void print_map()
+{
+	int i;
+
+	printf("\tmap:\n");
+	for (i = 0; i < map_size; i++)
+		printf("(graph_index) %3d -> %3d (heap_index)\n", i, map_graph_to_heap[i]);
+	printf("\n");
+}
+#endif
 
 /* Assigns struct functions and initializes internal variables */
 struct pqueue *pqueue_create(int graph_size)
@@ -112,15 +125,10 @@ static enum word_result print()
 	if (h == NULL || h->size == 0)
 		return WORD_ERROR_QUEUE_NOT_INITIALIZED;
 
-	printf("\n\t\theap:\n");
+	printf("\n\theap:\n");
 	for (i = 0; i < h->size; i++)
 		printf("%d: index = %3d, cost = %6.6g\n",
 				i, h->nodes[i].index, h->nodes[i].cost);
-	printf("\n");
-
-	printf("\n\t\tmap:\n");
-	for (i = 0; i < map_size; i++)
-//		printf("%4d(%4d) ", i, map_graph_to_heap[i]);
 	printf("\n");
 
 	return WORD_SUCCESS;
@@ -148,6 +156,12 @@ enum word_result insert(int index, float cost)
 
 	r = sift_up();
 
+	/*
+	printf("AFTER INSERT:\n");
+	print();
+	print_map();
+	*/
+
 	return r;
 }
 
@@ -169,8 +183,10 @@ static enum word_result sift_up()
 	if (h == NULL || h->size == 0)
 		return WORD_ERROR_QUEUE_NOT_INITIALIZED;
 
-	if (h->size == 1)
+	if (h->size == 1) {
+		map_graph_to_heap[h->nodes[0].index] = 0;
 		return WORD_SUCCESS;
+	}
 
 	index = h->size - 1;
 	parent = get_parent(index);
@@ -179,12 +195,19 @@ static enum word_result sift_up()
 	/* Moving the last element up the heap until heap conditions are met */
 	while (index > 0 && h->nodes[parent].cost > tmp.cost) {
 		h->nodes[index] = h->nodes[parent];
+		map_graph_to_heap[h->nodes[index].index] = index;
 		index = parent;
 		parent = get_parent(index);
 	}
 
 	h->nodes[index].index = tmp.index;
 	h->nodes[index].cost = tmp.cost;
+
+	/*
+	printf("SIFT UP:\n");
+	printf("index = %d, tmp.index = %d\n", index, tmp.index);
+	*/
+
 	map_graph_to_heap[tmp.index] = index;
 
 	return WORD_SUCCESS;
@@ -229,6 +252,7 @@ static enum word_result sift_down(int root)
 			break;
 		} else {
 			h->nodes[index] = h->nodes[min];
+			map_graph_to_heap[h->nodes[index].index] = index;
 			index = min;
 		}
 	}
@@ -246,7 +270,6 @@ int extract_min()
 
 	res = h->nodes[0].index;
 	delete_node(0);
-//	printf("new position for node %d is %d\n", res, map_graph_to_heap[res]);
 
 	return res;
 }
@@ -268,7 +291,7 @@ void update_node(int graph_index, float new_cost)
 			break;
 
 	/* Node not found */
-	if (i == h->size) {
+	if (map_graph_to_heap[graph_index] == NODE_NOT_FOUND) {
 		insert(graph_index, new_cost);
 	} else {
 		delete_node(i);
