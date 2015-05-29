@@ -58,8 +58,8 @@ char **wgraph_min_path(struct wgraph *g, struct tnode *t,
  * Finds the fixed cost path between two words.
  * Returns a pointer to an array of words that are part of the path
  */
-char **wgraph_fixed_path(struct wgraph *g, struct tnode *t,
-	       	int length, char *end, int *min_paths);
+enum word_result wgraph_fixed_path(struct wgraph *g, struct tnode *t,
+	       	int length, char *end, FILE *out);
 
 /* Prints the graph */
 void wgraph_print(struct wgraph *g);
