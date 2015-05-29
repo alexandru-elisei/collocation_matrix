@@ -178,13 +178,11 @@ enum word_result parse_text(FILE *text, struct tnode **t,
 	char buffer[LINE_LEN];
 	char word[WORD_LEN];
 	/* The address is shared between the search tree and the graph */
-	char *word_address;
 	int prev_index;			/* index of previously inserted word */
 	int word_index;
 	int graph_index;
 	int i;
 
-	word_address = NULL;
 	prev_index = graph_index = NODE_NOT_FOUND;
 	while (fgets(buffer, LINE_LEN, text) != NULL) {
 		word[0] = '\0';
@@ -206,13 +204,12 @@ enum word_result parse_text(FILE *text, struct tnode **t,
 			} else if (strchr(SEP, buffer[i]) != NULL &&
 							word[0] != '\0') {
 				word[word_index] = '\0';
-				word_address = strdup(word);
 
 				/* Adding the word */
-				graph_index = tree_add(t, word_address,
+				graph_index = tree_add(t, word,
 						graph->size);
-				wgraph_add(graph, word_address, graph_index,
-					       &prev_index, COST_UNKNOWN);
+				wgraph_add(graph, word, graph_index,
+							&prev_index, COST_UNKNOWN);
 				prev_index = graph_index;
 
 				word[0] = '\0';

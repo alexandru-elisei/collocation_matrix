@@ -12,6 +12,7 @@ struct tnode *tree_destroy(struct tnode *h)
 	if (h != NULL) {
 		tree_destroy(h->left);
 		tree_destroy(h->right);
+		free(h->word);
 		free(h);
 	}
 	return NULL;
@@ -29,7 +30,7 @@ int tree_add(struct tnode **t, char *w, int distinct_words)
 	int equal;
 
 	tmp = (struct tnode *)malloc(sizeof(struct tnode));
-	tmp->word = w;
+	tmp->word = strdup(w);
 	tmp->left = tmp->right = NULL;
   
 	if (*t == NULL) {
@@ -49,7 +50,10 @@ int tree_add(struct tnode **t, char *w, int distinct_words)
 			} else {
 				it = it->left;
 			}
+		/* Word exists, not adding it */
 		} else if (equal == 0) {
+			free(tmp->word);
+			free(tmp);
 			return it->graph_index;
 		} else {
 			if (it->right == NULL) {

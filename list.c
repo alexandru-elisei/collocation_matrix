@@ -14,7 +14,6 @@ struct lnode *list_destroy(struct lnode *l)
 	while (l != NULL) {
 		tmp = l;
 		l = l->next;
-		free(tmp->word);
 		free(tmp);
 	}
 
@@ -22,29 +21,24 @@ struct lnode *list_destroy(struct lnode *l)
 }
 
 /* Adds a word to the list, making sure there are no duplicates */
-enum word_result list_add(struct lnode **l, char *w, int index, float cost)
+enum word_result list_add(struct lnode **l, int index, float cost)
 {
 	struct lnode *tmp;
 	struct lnode *aux;
 
-	if (w == NULL)
-		return WORD_SUCCESS;
-
 	if (*l == NULL) {
 		*l = (struct lnode *) malloc(sizeof(struct lnode));
-		(*l)->word = strdup(w);
 		(*l)->count = 1;
 		(*l)->cost = cost;
 		(*l)->graph_index = index;
 		(*l)->next = NULL;
 	} else {
 		for (tmp = *l; tmp->next != NULL; tmp = tmp->next)
-			if (strcmp(tmp->word, w) == 0)
+			if (tmp->graph_index == index)
 				break;
 
-		if (strcmp(tmp->word, w) != 0) {
+		if (tmp->graph_index != index) {
 			aux = (struct lnode *) malloc(sizeof(struct lnode));	
-			aux->word = strdup(w);
 			aux->count = 1;
 			aux->cost = cost;
 			aux->graph_index = index;
@@ -62,18 +56,18 @@ enum word_result list_add(struct lnode **l, char *w, int index, float cost)
 void list_print(struct lnode *l)
 {
 	for (; l != NULL; l = l->next)
-		printf(" %-15s - %3d (cost %7g)(index %4d)\n", 
-			l->word, l->count, l->cost, l->graph_index);
+		printf(" %3d (cost %7g)(index %4d)\n", 
+			l->count, l->cost, l->graph_index);
 }
 
 /* Gets the cost for a word */
-float list_get_cost(struct lnode *l, char *w)
+float list_get_cost(struct lnode *l, int index)
 {
 	if (l == NULL)
 		return INF;
 
 	for (; l != NULL; l = l->next)
-		if (strcmp(l->word, w) == 0)
+		if (l->graph_index == index)
 			return l->cost;
 
 	return INF;
