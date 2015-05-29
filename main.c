@@ -107,9 +107,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-	//printf("destroying search_tree\n");
+	/* Freeing memory */
 	search_tree = tree_destroy(search_tree);
 	word_graph = wgraph_destroy(word_graph);
+
 	for (i = 0; i < cost_no; i++) {
 		free(cost_words[2*i]);
 		free(cost_words[2*i+1]);
