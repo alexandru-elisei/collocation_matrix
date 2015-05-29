@@ -51,8 +51,8 @@ enum word_result wgraph_empty(struct wgraph *g);
  * Finds the minimum cost path between two words by using Dijkstra's algorithm.
  * Returns a pointer to an array of words that are part of the path
  */
-char **wgraph_min_path(struct wgraph *g, struct tnode *t,
-	       	char *start, char *end, int *len);
+enum word_result wgraph_min_path(struct wgraph *g, struct tnode *t,
+	       	char *start, char *end, FILE *out);
 
 /* 
  * Finds the fixed cost path between two words.

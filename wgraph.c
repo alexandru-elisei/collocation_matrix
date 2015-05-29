@@ -36,49 +36,14 @@ static inline void update_neighbours(struct wgraph *g, struct pqueue *pq,
 	}
 }
 
-/* Reverses the path */
-static void reverse_path(char **path, int len)
+/* Prints the minimum cost path to file */
+void print_minpath_to_file(struct wgraph *g, int *path, 
+		int start, int end, FILE *out)
 {
-	int i;
-	char *aux;
+	if (path[end] != start)
+		print_minpath_to_file(g, path, start, path[end], out);
 
-	for (i = 0; i < len/2; i++) {
-		aux = path[i];
-		path[i] = path[len-1-i];
-		path[len-1-i] = aux;
-	}
-}
-
-/* Creates the array of words that form the path from start_index to end_index */
-static char **create_path(struct wgraph *g, int start_index,
-	       	int end_index, int *prev, int *len)
-{
-	int previous_node;
-	int mem;
-	char **path;
-
-	mem = MEM_INC;
-	*len = 0;
-
-	path = (char **)malloc(mem * sizeof(char *));
-	path[(*len)++] = g->nodes[end_index].word;
-
-	previous_node = prev[end_index];
-	while (previous_node != start_index) {
-		if (*len == mem - 1) {
-			mem += MEM_INC;
-			path = (char **)realloc(path, mem * sizeof(char *));
-		}
-
-		path[(*len)++] = g->nodes[previous_node].word;
-		previous_node = prev[previous_node];
-	}
-	path[(*len)++] = g->nodes[start_index].word;
-
-	/* The path is from end_index to start_index, so we reverse if */
-	reverse_path(path, *len);
-
-	return path;
+	fprintf(out, "%s ", g->nodes[path[end]].word);
 }
 
 /* Returns a graph with zero elements */
@@ -239,21 +204,15 @@ float wgraph_cost_by_index(struct wgraph *g, struct tnode *t,
 	return list_get_cost(g->nodes[index].adj, neighbour);
 }
 
-void print_path(struct wgraph *g, int *p, int start, int end)
-{
-	if (p[end] != start)
-		print_path(g, p, start, p[end]);
-	printf("%s ", g->nodes[p[end]].word);
-}
-
 /* 
  * Finds the minimum cost path between two words by using Dijkstra's algorithm.
  * Returns a pointer to an array of words that are part of the path
  */
-char **wgraph_min_path(struct wgraph *g, struct tnode *t,
-	       	char *start, char *end, int *len)
+enum word_result wgraph_min_path(struct wgraph *g, struct tnode *t,
+	       	char *start, char *end, FILE *out)
 {
 	struct pqueue *pq;
+	enum word_result r;
 
 	/* 
 	 * Index is the head of the arc, value is the tail of the arc, both
@@ -261,14 +220,13 @@ char **wgraph_min_path(struct wgraph *g, struct tnode *t,
 	 */
 	int *prev;
 	float *costs;		/* cost between start and node array index */
-	char **path = NULL;
 
 	int start_index, end_index;
 	int min_index = -1;
 	int i;
 
-	if (wgraph_empty(g) != WORD_GRAPH_NOT_EMPTY)
-		return NULL;
+	if ((r = wgraph_empty(g)) != WORD_GRAPH_NOT_EMPTY)
+		return r;
 
 	start_index = tree_search(t, start);
 	end_index = tree_search(t, end);
@@ -276,7 +234,7 @@ char **wgraph_min_path(struct wgraph *g, struct tnode *t,
 	if (start_index == NODE_NOT_FOUND ||
 			end_index == NODE_NOT_FOUND ||
 			g->nodes[start_index].adj == NULL)
-		return NULL;
+		return WORD_NO_MIN_PATH_FOUND;
 
 	pq = pqueue_create(g->size);
 
@@ -308,10 +266,11 @@ char **wgraph_min_path(struct wgraph *g, struct tnode *t,
 
 	/* Found path */
 	 if (min_index == end_index) {
-		path = create_path(g, start_index, end_index, prev, len);
-		return path;
+		print_minpath_to_file(g, prev, start_index, end_index, out);
+		fprintf(out, "%s\n", g->nodes[end_index].word);
+		return WORD_SUCCESS;
 	 } else {
-		return NULL;
+		return WORD_NO_MIN_PATH_FOUND;
 	 }
 }
 

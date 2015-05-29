@@ -46,14 +46,7 @@ int main(int argc, char **argv)
 	int *fixed_lengths;	/* length for the fixed length path */
 	int fixed_no;		/* number of words in the fixed_words array */
 
-	char **fixed_path;
-	int fixed_paths;
-
-	char **min_path;
-	int min_path_len;
-
 	int i;
-	int j;
 
 	if (argc < 3)
 		CHKRES(WORD_ERROR_INVALID_ARGUMENTS);
@@ -74,6 +67,17 @@ int main(int argc, char **argv)
 	parse_text(text, &search_tree, word_graph);
 	wgraph_calculate_costs(word_graph);
 
+	/*
+	wgraph_print(word_graph);
+
+	struct pqueue *pq;
+	pq = pqueue_create(word_graph->size);
+	pq->insert(3, 1.70915);
+	pq->insert(6, 0.70915);
+	pq->insert(4, 3.70915);
+	pq->insert(2, 0.10915);
+	pq->extract_min();
+	*/
 	/* Costs between words */
 	for (i = 0; i < cost_no; i++)
 		fprintf(out, "%g\n", wgraph_cost_by_name(word_graph,
@@ -81,19 +85,15 @@ int main(int argc, char **argv)
 
 	/* Minimum length paths */
 	for (i = 0; i < min_no; i++) {
-		min_path = wgraph_min_path(word_graph, search_tree, 
-				min_words[2*i], min_words[2*i+1], &min_path_len);
-
-		if (min_path == NULL) {
-			fprintf(stderr, "No path found between %s and %s\n",
-				min_words[2*i], min_words[2*i+1]);
-			continue;
+		r = wgraph_min_path(word_graph, search_tree,
+				min_words[2*i], min_words[2*i+1], out);
+		if (r != WORD_SUCCESS) {
+			if (r == WORD_NO_MIN_PATH_FOUND)
+				fprintf(stderr, "No path found between %s and %s\n",
+					min_words[2*i], min_words[2*i+1]);
+		} else {
+			CHKRES(r);
 		}
-
-		fprintf(out, "%s", min_path[0]);
-		for (j = 1; j < min_path_len; j++)
-			fprintf(out, " %s", min_path[j]);
-		fprintf(out, "\n");
 	}
 
 	/* Fixed length paths */
