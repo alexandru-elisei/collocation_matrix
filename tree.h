@@ -8,7 +8,7 @@
 #include "common.h"
 #include "list.h"
 
-struct tnode {
+struct __attribute__((aligned)) tnode {
 	char *word;		
 	int graph_index;		/* index in the graph array */
 	struct tnode *left;		/* lexicographically smaller */

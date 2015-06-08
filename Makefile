@@ -25,7 +25,7 @@ $(PROG): $(OBJS) $(HEADERS)
 	$(CC) $(OBJS) -lm -o $(PROG) $(CFLAGS)
 	
 %.o: %.c
-	$(CC) -g -c $^ -o $@ $(CFLAGS) -O0
+	$(CC) -c $^ -o $@ $(CFLAGS) -O2
 
 clean:
 	rm -rf a.out $(PROG) $(OBJS)

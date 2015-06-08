@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 	FILE *out = NULL;	/* Fisierul de iesire */
 
 	struct tnode *search_tree;
-	struct wgraph *word_graph = NULL;
+	struct wgraph *word_graph;
 	enum word_result r;
 	
 	char **cost_words;	/* words needed for printing the cost */
