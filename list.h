@@ -7,7 +7,7 @@
 
 #include "common.h"
 
-struct lnode {
+struct __attribute__((aligned)) lnode {
 	unsigned int count;	/* how many times the node appears */
 	int graph_index;	/* index in graph, for faster BT searching */
 	float cost;

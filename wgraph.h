@@ -10,13 +10,13 @@
 #include "tree.h"
 #include "pqueue.h"
 
-struct vertex {
+struct __attribute__((aligned)) vertex {
 	char *word;
 	unsigned int count;		/* number of occurences */
 	struct lnode *adj;		/* adjancency list */
 };
 
-struct wgraph {
+struct __attribute__((aligned)) wgraph {
 	struct vertex *nodes;
 	int last_word_index;		/* no word after the last word */
 	unsigned int total_words;
